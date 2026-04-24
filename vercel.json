@@ -1,5 +1,4 @@
 {
-  "installCommand": "echo '//npm.fontawesome.com/:_authToken='$FONTAWESOME_TOKEN >> .npmrc && npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist"
 }
