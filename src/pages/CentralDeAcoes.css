@@ -1,0 +1,344 @@
+/* ============================================================
+   CENTRAL DE AÇÕES — Dashboard principal do 1Doc
+   ============================================================ */
+
+.cda {
+  padding: 24px 28px;
+  background: #f5f7fa;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Welcome Section ──────────────────────────────────── */
+
+.cda__welcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cda__welcome-text h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px 0;
+}
+
+.cda__welcome-text p {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+/* ── KPI cards ────────────────────────────────────────── */
+
+.cda__kpis {
+  display: flex;
+  gap: 12px;
+}
+
+.cda__kpi-card {
+  background: #f0f1f3;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  padding: 12px 18px;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cda__kpi-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cda__kpi-values {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.cda__kpi-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.cda__kpi-divider {
+  width: 1px;
+  background: #ccc;
+  align-self: stretch;
+}
+
+.cda__kpi-primary {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.cda__kpi-primary--green { color: #1e8e3e; }
+.cda__kpi-primary--red   { color: #d93025; }
+.cda__kpi-primary--orange { color: #e37400; }
+
+.cda__kpi-secondary {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.cda__kpi-label {
+  font-size: 10px;
+  color: #888;
+}
+
+/* ── Main Grid: 5 colunas iguais, 2 rows ─────────────── */
+
+.cda__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Counter Cards (row 1, col 1-4) ───────────────────── */
+
+.cda__counter-card {
+  background: #fff;
+  border: 1px solid #e1e3e6;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cda__counter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cda__counter-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cda__counter-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.cda__counter-icon--blue   { background: #e8f0fe; color: #0058db; }
+.cda__counter-icon--green  { background: #e6f4ea; color: #1e8e3e; }
+.cda__counter-icon--orange { background: #fef3e2; color: #e37400; }
+.cda__counter-icon--red    { background: #fce8e8; color: #d93025; }
+
+.cda__counter-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+/* ── Comunicados: col 5, span row 1+2 ────────────────── */
+
+.cda__comunicados {
+  grid-column: 5;
+  grid-row: 1 / 3;
+  background: #fff;
+  border: 1px solid #e1e3e6;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cda__comunicados-header {
+  padding: 18px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.cda__comunicados-items {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.cda__circular {
+  padding: 12px;
+  border-radius: 8px;
+  background: #e8f0fe;
+}
+
+.cda__circular-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0058db;
+  margin-bottom: 4px;
+}
+
+.cda__circular-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.cda__circular-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+.cda__circular-date {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* ── Column Card (row 2, col 1-4) ─────────────────────── */
+
+.cda__col {
+  background: #fff;
+  border: 1px solid #e1e3e6;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.cda__col-subtitle {
+  padding: 14px 20px 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.cda__col-items {
+  flex: 1;
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.cda__item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #e8f0fe;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cda__item:hover {
+  background: #d6e4fa;
+}
+
+.cda__item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.cda__item-desc {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 1px;
+}
+
+.cda__item-date {
+  font-size: 11px;
+  color: #888;
+}
+
+.cda__col-footer {
+  padding: 12px;
+  margin-top: auto;
+}
+
+.cda__col-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.cda__col-link:hover {
+  background: #f5f7fa;
+  border-color: #999;
+}
+
+.cda__col-link i {
+  font-size: 14px;
+  color: #555;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .cda__grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+  }
+  .cda__comunicados {
+    grid-column: span 2;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .cda__grid {
+    grid-template-columns: 1fr;
+  }
+  .cda__comunicados {
+    grid-column: span 1;
+  }
+  .cda__welcome {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .cda__kpis {
+    flex-wrap: wrap;
+  }
+}

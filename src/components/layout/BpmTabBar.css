@@ -1,0 +1,49 @@
+.bpm-tabbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #e5e9f0;
+  flex-shrink: 0;
+}
+
+.bpm-tabbar__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7a99;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+
+.bpm-tabbar__tab i {
+  font-size: 13px;
+}
+
+.bpm-tabbar__tab:hover {
+  color: #0058db;
+  background: #f0f5ff;
+}
+
+.bpm-tabbar__tab--active {
+  color: #0058db;
+  font-weight: 700;
+  border-bottom-color: #0058db;
+  background: transparent;
+}
+
+.bpm-tabbar__tab--active:hover {
+  background: transparent;
+}

@@ -1,0 +1,129 @@
+.flow-canvas-wrapper {
+  flex: 1;
+  background: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  min-height: 380px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.flow-canvas-area {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-6);
+}
+
+.flow-svg {
+  display: block;
+  transition: transform var(--transition-slow);
+}
+
+/* Zoom controls */
+.flow-zoom-controls {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+.flow-zoom-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: background var(--transition-fast);
+}
+
+.flow-zoom-btn:hover { background: var(--bg-surface-2); }
+
+.flow-zoom-val {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  min-width: 36px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Selected panel */
+.flow-selected-panel {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 240px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.flow-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--primary-pure);
+  color: #fff;
+}
+
+.flow-panel-header h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.flow-panel-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.flow-panel-close:hover { color: #fff; }
+
+.flow-panel-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.flow-panel-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flow-panel-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.flow-panel-body .btn {
+  margin: var(--space-4);
+  margin-top: 0;
+  width: calc(100% - 32px);
+}

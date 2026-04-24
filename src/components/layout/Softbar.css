@@ -1,0 +1,260 @@
+/* ============================================================
+   SOFTBAR — Barra lateral de navegação entre produtos
+   Nexus Project · Softplan
+   ============================================================ */
+
+.softbar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  z-index: 1000;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 2px;
+}
+
+.softbar__item svg {
+  color: var(--umds-semantic-color-neutral-light-pure, #FFFFFF) !important;
+  --fa-primary-color: var(--umds-semantic-color-neutral-light-pure, #FFFFFF) !important;
+  --fa-secondary-color: var(--umds-semantic-color-neutral-light-pure, #FFFFFF) !important;
+  font-size: 18px;
+}
+
+.softbar__item:hover svg,
+.softbar__item--active svg {
+  color: #fff !important;
+  --fa-primary-color: #fff !important;
+  --fa-secondary-color: #fff !important;
+}
+
+/* Logo */
+.softbar__logo {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.softbar__logo:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Divider */
+.softbar__divider {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+/* List */
+.softbar__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+/* Item wrapper (for tooltip positioning) */
+.softbar__item-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Item button */
+.softbar__item {
+  position: relative;
+  width: 40px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.38);
+  transition: background 0.12s, color 0.12s;
+  outline: none;
+}
+
+.softbar__item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.softbar__item:focus-visible {
+  box-shadow: 0 0 0 2px rgba(91, 78, 255, 0.6);
+}
+
+/* Active state (current product) */
+.softbar__item--active {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
+}
+
+.softbar__item--active:hover {
+  background: rgba(99, 102, 241, 0.45);
+  color: #fff;
+}
+
+/* Disabled / not contracted */
+.softbar__item--disabled {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.softbar__item--disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Coming soon (extra dim) */
+.softbar__item--soon {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+/* Small lock dot on disabled items */
+.softbar__lock-dot {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid #12122a;
+}
+
+/* Notification badge */
+.softbar__notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1a1a2e;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Bottom section */
+.softbar__bottom {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Tooltip ───────────────────────────────────────────── */
+
+.softbar__tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e1e3f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 160px;
+  max-width: 220px;
+  pointer-events: none;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: sbTooltipIn 0.12s ease-out;
+}
+
+@keyframes sbTooltipIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(-4px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+/* Arrow */
+.softbar__tooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+.softbar__tooltip::after {
+  content: "";
+  position: absolute;
+  right: calc(100% - 1px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1e1e3f;
+}
+
+.softbar__tooltip-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.softbar__tooltip-tag--active {
+  background: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
+.softbar__tooltip-tag--disabled {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.softbar__tooltip-tag--soon {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.softbar__tooltip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.softbar__tooltip-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}

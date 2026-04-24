@@ -1,0 +1,255 @@
+.onb-header {
+  height: 56px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid #e1e3e6;
+  font-family: inherit;
+  position: relative;
+  z-index: 100;
+}
+
+.onb-header__left,
+.onb-header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Logo */
+.onb-header__logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0058db;
+  margin-right: 12px;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+}
+
+/* Nav */
+.onb-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.onb-header__nav-item {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+  position: relative;
+}
+
+.onb-header__nav-item:hover {
+  color: #0058db;
+}
+
+.onb-header__badge {
+  background: #0058db;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 12px;
+  line-height: 1;
+}
+
+/* ── Dropdowns ────────────────────────────────────────── */
+
+.onb-header__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #e1e3e6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  padding: 6px 0;
+  z-index: 500;
+  animation: headerDropIn 0.12s ease-out;
+}
+
+.onb-header__dropdown--tall {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.onb-header__dropdown--user {
+  right: 0;
+  left: auto;
+  min-width: 260px;
+  padding: 0;
+}
+
+@keyframes headerDropIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.onb-header__dropdown-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.1s;
+  white-space: nowrap;
+}
+
+.onb-header__dropdown-item:hover {
+  background: #f5f7fa;
+}
+
+.onb-header__dropdown-divider {
+  height: 1px;
+  background: #e9ecef;
+  margin: 4px 0;
+}
+
+/* User dropdown specifics */
+.onb-header__user-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  gap: 16px;
+}
+
+.onb-header__user-info strong {
+  font-size: 14px;
+  color: #111;
+}
+
+.onb-header__user-avatar-lg {
+  width: 48px;
+  height: 48px;
+  background: #e0e7ff;
+  color: #0058db;
+  border-radius: 50%;
+  border: 2px solid #c7d2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.onb-header__user-pref-btn {
+  margin: 0 16px 12px;
+  width: calc(100% - 32px);
+  padding: 8px 0;
+  border: 1px solid #0058db;
+  border-radius: 6px;
+  background: #fff;
+  color: #0058db;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.onb-header__user-pref-btn:hover {
+  background: #f0f4ff;
+}
+
+/* Search */
+.onb-header__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.onb-header__search-input {
+  width: 200px;
+  height: 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0 32px 0 12px;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.onb-header__search-input:focus {
+  border-color: #0058db;
+}
+
+.onb-header__search-icon {
+  position: absolute;
+  right: 10px;
+  color: #888;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* Actions */
+.onb-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #555;
+  font-size: 18px;
+}
+
+.onb-header__action-btn {
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.onb-header__action-btn:hover {
+  color: #333;
+}
+
+.onb-header__bell-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #f97316;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+}
+
+/* User Profile */
+.onb-header__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-left: 8px;
+  border-left: 1px solid #e1e3e6;
+  padding-left: 20px;
+  position: relative;
+}
+
+.onb-header__avatar {
+  width: 28px;
+  height: 28px;
+  background: #e0e7ff;
+  color: #0058db;
+  border-radius: 50%;
+  border: 1px solid #c7d2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
