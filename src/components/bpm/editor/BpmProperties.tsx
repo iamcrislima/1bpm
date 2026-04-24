@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import FormBuilderModal, { type FormField } from '../formBuilder/FormBuilderModal';
+import FormBuilderPage from '../formBuilder/FormBuilderPage';
+import type { FormFieldData } from '../formBuilder/fieldTypes';
 
 // ── Tipos de nó disponíveis ──────────────────────────────────
 const NODE_TYPES = [
@@ -782,6 +783,7 @@ const FORM_TIPOS = [
 function TabFormulario({
   data,
   update,
+  taskName,
 }: {
   data: any;
   update: (patch: any) => void;
@@ -789,9 +791,11 @@ function TabFormulario({
 }) {
   const formTipo     = data.formTipo     ?? 'dinamico';
   const formNome     = data.formNome     ?? '';
+  const formFields: FormFieldData[] = data.formBuilderFields ?? [];
   const formEntradas: FormVarMap[] = data.formEntradas ?? [];
   const formSaidas:   FormVarMap[] = data.formSaidas   ?? [];
-  const [abaVar, setAbaVar] = useState<'entradas' | 'saidas'>('entradas');
+  const [abaVar, setAbaVar]     = useState<'entradas' | 'saidas'>('entradas');
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   const addEntrada = () =>
     update({ formEntradas: [...formEntradas, { campoForm: '', varProcesso: '' }] });
@@ -851,13 +855,34 @@ function TabFormulario({
             )}
           </div>
           {formNome && (
-            <button className="cfg-link-btn" style={{ marginTop: 6 }}>
+            <button className="cfg-link-btn" style={{ marginTop: 6 }} onClick={() => setBuilderOpen(true)}>
               <i className="fa-regular fa-arrow-up-right-from-square" />
               Abrir formulário
             </button>
           )}
         </div>
+
+        {/* Botão criar formulário */}
+        <button className="cfg-btn-full" style={{ marginTop: 4 }} onClick={() => setBuilderOpen(true)}>
+          <i className={`fa-regular fa-${formFields.length > 0 ? 'pen-to-square' : 'plus'}`} />
+          {formFields.length > 0
+            ? `Editar formulário (${formFields.length} campos)`
+            : 'Criar formulário'}
+        </button>
       </Section>
+
+      {/* Form Builder full-screen overlay */}
+      {builderOpen && (
+        <FormBuilderPage
+          nomeTarefa={taskName}
+          initialFields={formFields.length > 0 ? formFields : undefined}
+          onClose={() => setBuilderOpen(false)}
+          onSave={(fields) => {
+            update({ formBuilderFields: fields });
+            setBuilderOpen(false);
+          }}
+        />
+      )}
 
       {/* Seção de variáveis — só exibe se um formulário foi selecionado */}
       {formNome && (
