@@ -49,8 +49,8 @@ function convertAiEdges(flowEdges: any[]): Edge[] {
     source:    e.source,
     target:    e.target,
     label:     e.label ?? '',
-    animated:  true,
-    type:      'smoothstep',
+    animated:  false,
+    type:      'labeled',
     markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
     style:     { stroke: '#0058db', strokeWidth: 2 },
   }));

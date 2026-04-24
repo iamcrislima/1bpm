@@ -8,8 +8,11 @@ import {
   Background,
   BackgroundVariant,
   MarkerType,
+  EdgeLabelRenderer,
+  BaseEdge,
+  getSmoothStepPath,
 } from '@xyflow/react';
-import type { Connection, Edge, Node } from '@xyflow/react';
+import type { Connection, Edge, Node, EdgeProps } from '@xyflow/react';
 
 import {
   StartNode, EndNode, TaskNode, GatewayNode,
@@ -19,6 +22,79 @@ import {
 } from '../nodes/CustomNodes';
 import '../nodes/nodes.css';
 
+// ── Aresta com label editável inline ────────────────────────
+function LabeledEdge({
+  id,
+  sourceX, sourceY, targetX, targetY,
+  sourcePosition, targetPosition,
+  style, markerEnd, selected,
+  label,
+}: EdgeProps) {
+  const { setEdges } = useReactFlow();
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(String(label ?? ''));
+
+  // Sincroniza se o label mudar externamente
+  useEffect(() => { setText(String(label ?? '')); }, [label]);
+
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX, sourceY, sourcePosition,
+    targetX, targetY, targetPosition,
+  });
+
+  const commit = useCallback(() => {
+    setEdges(eds => eds.map(e => e.id === id ? { ...e, label: text } : e));
+    setEditing(false);
+  }, [id, text, setEdges]);
+
+  const hasText = text.trim().length > 0;
+
+  return (
+    <>
+      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+
+      <EdgeLabelRenderer>
+        <div
+          className="nodrag nopan"
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%,-50%) translate(${labelX}px,${labelY}px)`,
+            pointerEvents: 'all',
+          }}
+        >
+          {editing ? (
+            <input
+              className="edge-label-input"
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onBlur={commit}
+              onKeyDown={e => {
+                if (e.key === 'Enter')  commit();
+                if (e.key === 'Escape') { setText(String(label ?? '')); setEditing(false); }
+              }}
+              autoFocus
+              placeholder="Ex: Sim, Não, Valor > 5000"
+            />
+          ) : (
+            <div
+              className={`edge-label-pill${hasText ? ' has-text' : ''}${selected ? ' selected' : ''}`}
+              onClick={() => setEditing(true)}
+              title={hasText ? 'Clique para editar a condição' : 'Clique para adicionar uma condição'}
+            >
+              {hasText
+                ? text
+                : selected
+                  ? <><i className="fa-regular fa-pen" style={{ fontSize: 9, marginRight: 4 }} />condição</>
+                  : null}
+            </div>
+          )}
+        </div>
+      </EdgeLabelRenderer>
+    </>
+  );
+}
+
+// ── Tipos de nó e aresta ─────────────────────────────────────
 const nodeTypes = {
   start:              StartNode,
   end:                EndNode,
@@ -37,13 +113,17 @@ const nodeTypes = {
   'wait-response':    MsgNode,
 };
 
+const edgeTypes = {
+  labeled: LabeledEdge,
+};
+
 let idCounter = 100;
 const getId = () => `node_${idCounter++}`;
 
 interface NodePatch {
   id: string;
   data: Record<string, any>;
-  ts: number; // timestamp to force effect to re-run even if same id/data
+  ts: number;
 }
 
 interface BpmCanvasProps {
@@ -77,15 +157,21 @@ export default function BpmCanvas({
     );
   }, [nodeUpdate, setNodes]);
 
+  // Helper para criar aresta com o tipo correto
+  const makeEdge = useCallback((params: Connection | Edge, extra?: Partial<Edge>): Edge => ({
+    ...params,
+    id: `e-${params.source}-${params.target}-${Date.now()}`,
+    animated: false,
+    type: 'labeled',
+    label: '',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
+    style: { stroke: '#0058db', strokeWidth: 2 },
+    ...extra,
+  } as Edge), []);
+
   const onConnect = useCallback((params: Connection | Edge) => {
-    setEdges(eds => addEdge({
-      ...params,
-      animated: true,
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
-      style: { stroke: '#0058db', strokeWidth: 2 },
-    } as any, eds));
-  }, [setEdges]);
+    setEdges(eds => addEdge(makeEdge(params), eds));
+  }, [setEdges, makeEdge]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -194,6 +280,7 @@ export default function BpmCanvas({
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.25, minZoom: 0.4, maxZoom: 1.5 }}
         proOptions={{ hideAttribution: true }}

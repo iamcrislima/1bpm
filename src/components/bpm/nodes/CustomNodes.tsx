@@ -95,7 +95,7 @@ function NodeActionToolbar({ nodeId, selected }: { nodeId: string; selected: boo
       source: nodeId, target: newId,
       sourceHandle: hdl.sourceHandle,
       targetHandle: hdl.targetHandle,
-      type: 'smoothstep', animated: true,
+      type: 'labeled', label: '', animated: false,
       markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
       style: { stroke: '#0058db', strokeWidth: 2 },
     }]);

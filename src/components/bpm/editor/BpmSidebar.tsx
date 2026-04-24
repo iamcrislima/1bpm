@@ -25,13 +25,13 @@ const PALETTE = [
     ],
   },
   {
-    category: 'Gateways',
+    category: 'Decisões',
     icon: 'fa-regular fa-diamond',
     color: 'var(--bpm-purple)',
     items: [
-      { type: 'gateway',            label: 'Gateway Exclusivo (XOR)', icon: 'fa-regular fa-code-branch',   color: '#9333ea', bg: '#f3e8ff' },
-      { type: 'gateway-paralelo',   label: 'Gateway Paralelo (AND)',  icon: 'fa-regular fa-arrows-split-up-and-left', color: '#0ea5e9', bg: '#e0f2fe' },
-      { type: 'gateway-inclusivo',  label: 'Gateway Inclusivo (OR)',  icon: 'fa-regular fa-circle-nodes',  color: '#10b981', bg: '#d1fae5' },
+      { type: 'gateway',           label: 'Decisão exclusiva',  icon: 'fa-regular fa-code-branch',              color: '#9333ea', bg: '#f3e8ff' },
+      { type: 'gateway-paralelo',  label: 'Divisão paralela',   icon: 'fa-regular fa-arrows-split-up-and-left', color: '#0ea5e9', bg: '#e0f2fe' },
+      { type: 'gateway-inclusivo', label: 'Divisão inclusiva',  icon: 'fa-regular fa-circle-nodes',             color: '#10b981', bg: '#d1fae5' },
     ],
   },
   {

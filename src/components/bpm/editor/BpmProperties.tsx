@@ -770,54 +770,208 @@ function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => v
 }
 
 // ── Aba: Formulário ──────────────────────────────────────────
+interface FormVarMap { campoForm: string; varProcesso: string }
+
+const FORM_TIPOS = [
+  { value: 'dinamico',      label: 'Dinâmico' },
+  { value: 'ungp',          label: 'UNGP' },
+  { value: 'simulacao',     label: 'Simulação' },
+  { value: 'editor-texto',  label: 'Editor de texto' },
+];
+
 function TabFormulario({
   data,
   update,
-  taskName,
 }: {
   data: any;
   update: (patch: any) => void;
   taskName: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const formFields: FormField[] = data.formFields || [];
+  const formTipo     = data.formTipo     ?? 'dinamico';
+  const formNome     = data.formNome     ?? '';
+  const formEntradas: FormVarMap[] = data.formEntradas ?? [];
+  const formSaidas:   FormVarMap[] = data.formSaidas   ?? [];
+  const [abaVar, setAbaVar] = useState<'entradas' | 'saidas'>('entradas');
+
+  const addEntrada = () =>
+    update({ formEntradas: [...formEntradas, { campoForm: '', varProcesso: '' }] });
+  const updateEntrada = (i: number, patch: Partial<FormVarMap>) =>
+    update({ formEntradas: formEntradas.map((r, idx) => idx === i ? { ...r, ...patch } : r) });
+  const removeEntrada = (i: number) =>
+    update({ formEntradas: formEntradas.filter((_, idx) => idx !== i) });
+
+  const addSaida = () =>
+    update({ formSaidas: [...formSaidas, { campoForm: '', varProcesso: '' }] });
+  const updateSaida = (i: number, patch: Partial<FormVarMap>) =>
+    update({ formSaidas: formSaidas.map((r, idx) => idx === i ? { ...r, ...patch } : r) });
+  const removeSaida = (i: number) =>
+    update({ formSaidas: formSaidas.filter((_, idx) => idx !== i) });
 
   return (
-    <Section title="Formulário vinculado">
-      {formFields.length === 0 ? (
-        <div className="cfg-empty-state">
-          <i className="fa-regular fa-file-lines" />
-          <span>Nenhum campo configurado</span>
+    <>
+      <Section title="Configuração do formulário">
+        {/* Tipo */}
+        <div className="cfg-field">
+          <FieldLabel>Tipo</FieldLabel>
+          <div className="cfg-radio-group cfg-radio-group--horizontal">
+            {FORM_TIPOS.map(t => (
+              <label key={t.value} className="cfg-radio-label">
+                <input
+                  type="radio"
+                  name="formTipo"
+                  value={t.value}
+                  checked={formTipo === t.value}
+                  onChange={() => update({ formTipo: t.value })}
+                  className="cfg-radio"
+                />
+                {t.label}
+              </label>
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="cfg-fields-list">
-          {formFields.map(f => (
-            <div key={f.id} className="cfg-field-item">
-              {f.required && <i className="fa-solid fa-asterisk" style={{ fontSize: 8, color: 'var(--danger)' }} />}
-              <span style={{ flex: 1 }}>{f.label}</span>
-              <span className="cfg-field-type-badge">
-                {f.type === 'texto-curto' ? 'Texto' : f.type === 'data' ? 'Data' : f.type === 'anexo' ? 'Arquivo' : f.type}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-      <button
-        className="cfg-btn-full"
-        onClick={() => setOpen(true)}
-      >
-        <i className="fa-regular fa-pen-to-square" />
-        {formFields.length > 0 ? 'Editar formulário' : 'Criar formulário'}
-      </button>
 
-      <FormBuilderModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        initialFields={formFields}
-        onSave={(fields) => { update({ formFields: fields }); setOpen(false); }}
-        taskName={taskName}
-      />
-    </Section>
+        {/* Formulário selecionado */}
+        <div className="cfg-field">
+          <FieldLabel>Formulário</FieldLabel>
+          <div className="cfg-select-clear">
+            <select
+              className="cfg-select"
+              value={formNome}
+              onChange={e => update({ formNome: e.target.value })}
+            >
+              <option value="">Selecione um formulário...</option>
+              {FORMULARIOS_MOCK.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+            {formNome && (
+              <button className="cfg-clear-btn" title="Limpar" onClick={() => update({ formNome: '' })}>
+                <i className="fa-regular fa-xmark" />
+              </button>
+            )}
+          </div>
+          {formNome && (
+            <button className="cfg-link-btn" style={{ marginTop: 6 }}>
+              <i className="fa-regular fa-arrow-up-right-from-square" />
+              Abrir formulário
+            </button>
+          )}
+        </div>
+      </Section>
+
+      {/* Seção de variáveis — só exibe se um formulário foi selecionado */}
+      {formNome && (
+        <Section title="Mapeamento de variáveis">
+          {/* Mini tabs */}
+          <div className="cfg-exec-tabs" style={{ marginBottom: 12 }}>
+            <button
+              className={`cfg-exec-tab ${abaVar === 'entradas' ? 'active' : ''}`}
+              onClick={() => setAbaVar('entradas')}
+            >
+              <i className="fa-regular fa-arrow-right-to-bracket" />
+              Processo → Formulário
+              {formEntradas.length > 0 && (
+                <span className="cfg-exec-tab-count">{formEntradas.length}</span>
+              )}
+            </button>
+            <button
+              className={`cfg-exec-tab ${abaVar === 'saidas' ? 'active' : ''}`}
+              onClick={() => setAbaVar('saidas')}
+            >
+              <i className="fa-regular fa-arrow-right-from-bracket" />
+              Formulário → Processo
+              {formSaidas.length > 0 && (
+                <span className="cfg-exec-tab-count">{formSaidas.length}</span>
+              )}
+            </button>
+          </div>
+
+          {/* Entradas: variável do processo pré-preenche campo do formulário */}
+          {abaVar === 'entradas' && (
+            <div className="cfg-form-map-list">
+              <p className="cfg-form-map-hint">
+                <i className="fa-regular fa-circle-info" />
+                Envie dados do processo para pré-preencher campos do formulário.
+              </p>
+              {formEntradas.map((row, i) => (
+                <div key={i} className="cfg-form-map-row">
+                  <select
+                    className="cfg-select"
+                    value={row.varProcesso}
+                    onChange={e => updateEntrada(i, { varProcesso: e.target.value })}
+                  >
+                    <option value="">Variável do processo...</option>
+                    {VARIAVEIS_PROCESSO.map(v => (
+                      <option key={v.key} value={v.key}>{v.label}</option>
+                    ))}
+                  </select>
+                  <i className="fa-regular fa-arrow-right cfg-form-map-arrow" />
+                  <select
+                    className="cfg-select"
+                    value={row.campoForm}
+                    onChange={e => updateEntrada(i, { campoForm: e.target.value })}
+                  >
+                    <option value="">Campo do formulário...</option>
+                    {CAMPOS_FORM_MOCK.map(c => (
+                      <option key={c.key} value={c.key}>{c.label}</option>
+                    ))}
+                  </select>
+                  <button className="cfg-icon-btn red" onClick={() => removeEntrada(i)} title="Remover">
+                    <i className="fa-regular fa-xmark" />
+                  </button>
+                </div>
+              ))}
+              <button className="cfg-add-row-btn" onClick={addEntrada}>
+                <i className="fa-regular fa-plus" />
+                Adicionar mapeamento
+              </button>
+            </div>
+          )}
+
+          {/* Saídas: campo do formulário salva em variável do processo */}
+          {abaVar === 'saidas' && (
+            <div className="cfg-form-map-list">
+              <p className="cfg-form-map-hint">
+                <i className="fa-regular fa-circle-info" />
+                Capture respostas do formulário e salve em variáveis do processo.
+              </p>
+              {formSaidas.map((row, i) => (
+                <div key={i} className="cfg-form-map-row">
+                  <select
+                    className="cfg-select"
+                    value={row.campoForm}
+                    onChange={e => updateSaida(i, { campoForm: e.target.value })}
+                  >
+                    <option value="">Campo do formulário...</option>
+                    {CAMPOS_FORM_MOCK.map(c => (
+                      <option key={c.key} value={c.key}>{c.label}</option>
+                    ))}
+                  </select>
+                  <i className="fa-regular fa-arrow-right cfg-form-map-arrow" />
+                  <select
+                    className="cfg-select"
+                    value={row.varProcesso}
+                    onChange={e => updateSaida(i, { varProcesso: e.target.value })}
+                  >
+                    <option value="">Variável do processo...</option>
+                    {VARIAVEIS_PROCESSO.map(v => (
+                      <option key={v.key} value={v.key}>{v.label}</option>
+                    ))}
+                  </select>
+                  <button className="cfg-icon-btn red" onClick={() => removeSaida(i)} title="Remover">
+                    <i className="fa-regular fa-xmark" />
+                  </button>
+                </div>
+              ))}
+              <button className="cfg-add-row-btn" onClick={addSaida}>
+                <i className="fa-regular fa-plus" />
+                Adicionar mapeamento
+              </button>
+            </div>
+          )}
+        </Section>
+      )}
+    </>
   );
 }
 

@@ -1,6 +1,12 @@
 import type { Edge, Node } from '@xyflow/react';
+import { MarkerType } from '@xyflow/react';
 
-export const defaultEdgeOptions = { type: 'smoothstep', style: { stroke: '#94A3B8', strokeWidth: 2 } };
+export const defaultEdgeOptions = {
+  type: 'labeled',
+  animated: false,
+  markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
+  style: { stroke: '#0058db', strokeWidth: 2 },
+};
 
 export const comprasNodes: Node[] = [
   { id: 'start', type: 'start', position: { x: 400, y: 50 }, data: { label: 'Solicitação de Compra' } },

@@ -1432,3 +1432,153 @@
   font-size: 11px;
   flex-shrink: 0;
 }
+
+/* ── Edge label editável ── */
+.edge-label-pill {
+  min-width: 20px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+/* Pill invisível por padrão — aparece quando selecionada ou tem texto */
+.edge-label-pill:not(.has-text):not(.selected) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Quando a aresta está selecionada mas sem texto: pill leve azul */
+.edge-label-pill.selected:not(.has-text) {
+  opacity: 1;
+  pointer-events: all;
+  background: var(--primary-light);
+  color: var(--primary-pure);
+  border: 1.5px dashed var(--primary-medium);
+}
+
+/* Com texto: pill sólida */
+.edge-label-pill.has-text {
+  background: var(--bg-white);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-medium);
+  box-shadow: 0 1px 4px rgba(0,0,0,.10);
+}
+
+.edge-label-pill.has-text:hover {
+  border-color: var(--primary-pure);
+  color: var(--primary-pure);
+}
+
+.edge-label-pill.has-text.selected {
+  border-color: var(--primary-pure);
+  color: var(--primary-pure);
+  box-shadow: 0 0 0 3px rgba(0,88,219,.12);
+}
+
+/* Input inline de edição */
+.edge-label-input {
+  border: 1.5px solid var(--primary-pure);
+  border-radius: 100px;
+  background: var(--bg-white);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  outline: none;
+  min-width: 120px;
+  box-shadow: 0 0 0 3px rgba(0,88,219,.15), 0 2px 8px rgba(0,0,0,.12);
+  text-align: center;
+}
+
+/* ── Formulário — mapeamento de variáveis ── */
+.cfg-radio-group--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.cfg-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--primary-pure);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cfg-link-btn:hover { color: var(--primary-dark); }
+
+.cfg-form-map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg-form-map-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin: 0 0 4px 0;
+}
+.cfg-form-map-hint i { font-size: 11px; margin-top: 1px; flex-shrink: 0; }
+
+.cfg-form-map-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cfg-form-map-row .cfg-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px !important;
+  padding: 5px 8px !important;
+}
+
+.cfg-form-map-arrow {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.cfg-add-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--primary-pure);
+  background: var(--primary-light);
+  border: 1.5px dashed var(--primary-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.cfg-add-row-btn:hover {
+  background: var(--primary-pure);
+  color: #fff;
+  border-style: solid;
+}
