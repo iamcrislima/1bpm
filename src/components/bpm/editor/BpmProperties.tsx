@@ -136,6 +136,8 @@ function TabGeral({
       </Section>
 
       <Section title="Configurações de prazo">
+        {/* ── Prazo ── */}
+        <div className="cfg-subsection-label">Prazo</div>
         <div className="cfg-radio-group">
           {[
             { value: 'sem-prazo', label: 'Sem Prazo' },
@@ -187,11 +189,59 @@ function TabGeral({
             placeholder="Ex: ${prazoBase + 5}"
           />
         )}
-        {currentType.value !== 'start' && currentType.value !== 'end' && prazoTipo !== 'sem-prazo' && (
-          <div className="cfg-hint">
-            <i className="fa-regular fa-bell" />
-            Responsáveis serão notificados 1 dia antes do vencimento
+
+        {/* ── Aviso de vencimento ── */}
+        <div className="cfg-subsection-label" style={{ marginTop: 14 }}>Aviso de vencimento</div>
+        <div className="cfg-radio-group">
+          {[
+            { value: 'sem-aviso', label: 'Sem Aviso' },
+            { value: 'tempo',     label: 'Tempo' },
+            { value: 'expressao', label: 'Expressão' },
+          ].map(opt => (
+            <label key={opt.value} className="cfg-radio-label">
+              <input
+                type="radio"
+                name={`avisoTipo-${node.id}`}
+                value={opt.value}
+                checked={(data.avisoTipo ?? 'sem-aviso') === opt.value}
+                onChange={() => update({ avisoTipo: opt.value })}
+                className="cfg-radio"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+        {(data.avisoTipo ?? 'sem-aviso') === 'tempo' && (
+          <div className="cfg-row" style={{ marginTop: 10 }}>
+            <input
+              type="number"
+              className="cfg-input"
+              style={{ width: 80 }}
+              value={data.aviso ?? 1}
+              min={1}
+              onChange={e => update({ aviso: parseInt(e.target.value) || 1 })}
+            />
+            <select
+              className="cfg-select"
+              style={{ flex: 1 }}
+              value={data.avisoUnidade ?? 'dias'}
+              onChange={e => update({ avisoUnidade: e.target.value })}
+            >
+              <option value="minutos">Minutos antes</option>
+              <option value="horas">Horas antes</option>
+              <option value="dias">Dias antes</option>
+            </select>
           </div>
+        )}
+        {(data.avisoTipo ?? 'sem-aviso') === 'expressao' && (
+          <input
+            type="text"
+            className="cfg-input"
+            style={{ marginTop: 10 }}
+            value={data.avisoExpressao || ''}
+            onChange={e => update({ avisoExpressao: e.target.value })}
+            placeholder="Ex: ${prazo - 2}"
+          />
         )}
       </Section>
     </>
