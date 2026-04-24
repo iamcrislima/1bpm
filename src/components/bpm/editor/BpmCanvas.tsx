@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -40,11 +40,18 @@ const nodeTypes = {
 let idCounter = 100;
 const getId = () => `node_${idCounter++}`;
 
+interface NodePatch {
+  id: string;
+  data: Record<string, any>;
+  ts: number; // timestamp to force effect to re-run even if same id/data
+}
+
 interface BpmCanvasProps {
   onNodeSelect: (node: Node | null) => void;
   onNodesUpdate?: (nodes: Node[]) => void;
   initialNodes?: Node[];
   initialEdges?: Edge[];
+  nodeUpdate?: NodePatch | null;
 }
 
 export default function BpmCanvas({
@@ -52,6 +59,7 @@ export default function BpmCanvas({
   onNodesUpdate,
   initialNodes = [],
   initialEdges = [],
+  nodeUpdate = null,
 }: BpmCanvasProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -60,6 +68,14 @@ export default function BpmCanvas({
   const [zoom, setZoom] = useState(100);
   const [mode, setMode] = useState<'simples' | 'avancado'>('simples');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  // Aplica patches de dados vindos do painel de propriedades em tempo real
+  useLayoutEffect(() => {
+    if (!nodeUpdate) return;
+    setNodes(nds =>
+      nds.map(n => n.id === nodeUpdate.id ? { ...n, data: nodeUpdate.data } : n)
+    );
+  }, [nodeUpdate, setNodes]);
 
   const onConnect = useCallback((params: Connection | Edge) => {
     setEdges(eds => addEdge({
