@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5173)",
+      "Bash(npm run *)",
+      "Bash(npx vite *)",
+      "Bash(not exist *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

@@ -54,18 +54,18 @@ function AppLayout() {
       return [root, procInteligentes, { label: 'Visão Geral' }]
     }
     if (location.pathname === '/processos/fluxos') {
-      return [root, procInteligentes, { label: 'Fluxos' }]
+      return [root, procInteligentes, { label: 'Processos' }]
     }
     if (location.pathname === '/processos/novo') {
-      return [root, procInteligentes, { label: 'Fluxos', to: '/processos/fluxos' }, { label: 'Novo Fluxo' }]
+      return [root, procInteligentes, { label: 'Processos', to: '/processos/fluxos' }, { label: 'Novo Processo' }]
     }
     const matchDetalhe = location.pathname.match(/^\/processos\/([^/]+)$/)
     if (matchDetalhe) {
       const id = matchDetalhe[1]
-      return [root, procInteligentes, { label: 'Fluxos', to: '/processos/fluxos' }, { label: resolveProcessoNome(id) }]
+      return [root, procInteligentes, { label: 'Processos', to: '/processos/fluxos' }, { label: resolveProcessoNome(id) }]
     }
     if (location.pathname.startsWith('/processos')) {
-      return [root, procInteligentes, { label: 'Fluxos' }]
+      return [root, procInteligentes, { label: 'Processos' }]
     }
     if (location.pathname.startsWith('/formularios')) {
       return [root, procInteligentes, { label: 'Formulários' }]

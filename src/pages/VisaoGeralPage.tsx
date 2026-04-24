@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { processos, dashboard } from '../data/mockData'
 import NovoProcessoModal from '../components/bpm/NovoProcessoModal'
 import './VisaoGeralPage.css'
@@ -72,7 +72,35 @@ const AREA_COLORS: Record<string, string> = {
 
 export default function VisaoGeralPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [showNovoModal, setShowNovoModal] = useState(false)
+  const tab = searchParams.get('tab')
+
+  if (tab === 'automacoes') {
+    return (
+      <div key="automacoes" className="vg-page animate-fade-in">
+        <div className="vg-header">
+          <div className="vg-header-left">
+            <h1 className="vg-title">Automações Globais</h1>
+            <p className="vg-subtitle">
+              Crie e gerencie regras de automação que funcionam em todos os fluxos.
+            </p>
+          </div>
+        </div>
+        <div className="automacoes-empty">
+          <i className="fa-regular fa-bolt automacoes-empty-icon" />
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '8px 0 4px', color: 'var(--text-primary)' }}>Nenhuma automação global configurada</h3>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+            As automações globais permitem criar regras que disparam ações automáticas independentes de fluxos específicos.
+          </p>
+          <button className="btn btn-primary" style={{ marginTop: 16 }}>
+            <i className="fa-regular fa-plus" />
+            Nova Automação Global
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const kpis = [
     {
@@ -106,7 +134,7 @@ export default function VisaoGeralPage() {
   ]
 
   return (
-    <div className="vg-page animate-fade-in">
+    <div key="visao-geral" className="vg-page animate-fade-in">
 
       {/* ── KPIs ── */}
       <div className="vg-kpis">

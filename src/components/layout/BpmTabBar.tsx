@@ -12,7 +12,7 @@ const TABS = [
   },
   {
     id: "fluxos",
-    label: "Fluxos",
+    label: "Processos",
     icon: "fa-regular fa-diagram-project",
     to: "/processos/fluxos",
     match: (pathname: string, tab: string | null) =>

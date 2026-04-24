@@ -194,6 +194,16 @@ export default function ProcessosPage() {
   return (
     <div className="processos-page animate-fade-in">
 
+      {/* ── Header ── */}
+      <div className="processos-header">
+        <div className="processos-header-left">
+          <h1 className="processos-title">Processos</h1>
+          <p className="processos-subtitle">
+            Crie, edite e gerencie os processos da sua organização e seus respectivos fluxos de trabalho automatizados.
+          </p>
+        </div>
+      </div>
+
       {/* ── Toolbar ── */}
       <div className="processos-toolbar">
         <div className="toolbar-left">

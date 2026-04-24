@@ -7,6 +7,27 @@
   overflow-y: auto;
 }
 
+/* ── Header ── */
+.processos-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: var(--space-2);
+}
+
+.processos-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.processos-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 /* ── Toolbar ── */
 .processos-toolbar {
   display: flex;
