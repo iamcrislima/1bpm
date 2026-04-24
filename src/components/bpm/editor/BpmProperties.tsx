@@ -13,9 +13,9 @@ const NODE_TYPES = [
   { value: 'task-service',      label: 'Tarefa de Serviço',             icon: 'fa-regular fa-server',                    color: '#0891b2', bg: '#cffafe' },
   { value: 'task-script',       label: 'Tarefa de Execução de Script',  icon: 'fa-regular fa-code',                      color: '#7c3aed', bg: '#ede9fe' },
   { value: 'task-system',       label: 'Subprocesso Reutilizável',      icon: 'fa-regular fa-arrows-rotate',             color: '#6366f1', bg: '#ede9fe' },
-  { value: 'gateway',           label: 'Gateway Exclusivo',             icon: 'fa-regular fa-code-branch',               color: '#9333ea', bg: '#f3e8ff' },
-  { value: 'gateway-paralelo',  label: 'Gateway Paralelo',              icon: 'fa-regular fa-arrows-split-up-and-left',  color: '#0ea5e9', bg: '#e0f2fe' },
-  { value: 'gateway-inclusivo', label: 'Gateway Inclusivo',             icon: 'fa-regular fa-circle-nodes',              color: '#10b981', bg: '#d1fae5' },
+  { value: 'gateway',           label: 'Decisão — uma saída (XOR)',     icon: 'fa-regular fa-code-branch',               color: '#9333ea', bg: '#f3e8ff' },
+  { value: 'gateway-paralelo',  label: 'Divisão paralela — todas (AND)',icon: 'fa-regular fa-arrows-split-up-and-left',  color: '#0ea5e9', bg: '#e0f2fe' },
+  { value: 'gateway-inclusivo', label: 'Divisão inclusiva — várias (OR)',icon: 'fa-regular fa-circle-nodes',             color: '#10b981', bg: '#d1fae5' },
 ];
 
 const ATORES = [
@@ -46,6 +46,33 @@ const VARIAVEIS_PROCESSO = [
   { key: 'CPA.cdSolicitante',  label: 'Código do solicitante' },
   { key: 'CPA.nmSolicitante',  label: 'Nome do solicitante' },
   { key: 'CPA.emailResponsavel', label: 'E-mail do responsável' },
+];
+
+// ── Mock de formulários cadastrados no sistema ────────────────
+const FORMULARIOS_MOCK = [
+  '[SEMA] Realizar Parte Técnica da Solicitação (v.2)',
+  '[RH] Avaliação de Desempenho (v.1)',
+  '[LICIT] Solicitação de Licitação (v.3)',
+  '[PROTO] Abertura de Processo Administrativo (v.1)',
+  '[FISC] Relatório de Vistoria (v.2)',
+  '[JUR] Parecer Jurídico Simplificado (v.1)',
+  '[TI] Solicitação de Acesso a Sistema (v.4)',
+  '[COMPRAS] Requisição de Material (v.2)',
+];
+
+// Campos típicos de formulário para mapeamento
+const CAMPOS_FORM_MOCK = [
+  { key: 'nomeRequerente',    label: 'Nome do requerente' },
+  { key: 'cpfCnpj',          label: 'CPF / CNPJ' },
+  { key: 'emailContato',     label: 'E-mail de contato' },
+  { key: 'descricao',        label: 'Descrição / Justificativa' },
+  { key: 'parecerTecnico',   label: 'Parecer técnico' },
+  { key: 'dataVencimento',   label: 'Data de vencimento' },
+  { key: 'valorSolicitado',  label: 'Valor solicitado' },
+  { key: 'answerId',         label: 'ID da resposta do formulário' },
+  { key: 'tac',              label: 'TAC' },
+  { key: 'infoTac',          label: 'Info TAC' },
+  { key: 'info',             label: 'Informações adicionais' },
 ];
 
 // ── Catálogo de executáveis com nomes amigáveis ───────────────
