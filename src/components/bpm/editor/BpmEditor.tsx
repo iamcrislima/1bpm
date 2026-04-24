@@ -86,13 +86,23 @@ export default function BpmEditor() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   // Título exibido no header do editor
-  const editorTitle = stateFlow?.name ?? template?.title ?? 'Novo Processo';
+  const nomeParam   = searchParams.get('nome');
+  const editorTitle = stateFlow?.name ?? template?.title ?? nomeParam ?? 'Novo Processo';
 
   const updateNodeData = useCallback((id: string, data: any) => {
     setNodes(prev =>
       prev.map(n => (n.id === id ? { ...n, data } : n))
     );
     setSelectedNode(prev => (prev?.id === id ? { ...prev, data } : prev));
+  }, []);
+
+  const changeNodeType = useCallback((id: string, newType: string, newData: any) => {
+    setNodes(prev =>
+      prev.map(n => (n.id === id ? { ...n, type: newType, data: { ...n.data, ...newData } } : n))
+    );
+    setSelectedNode(prev =>
+      prev?.id === id ? { ...prev, type: newType, data: { ...prev.data, ...newData } } : prev
+    );
   }, []);
 
   const handleNodesUpdate = useCallback((updated: Node[]) => {
@@ -152,7 +162,7 @@ export default function BpmEditor() {
             initialEdges={initialEdges}
           />
         </ReactFlowProvider>
-        <BpmProperties selectedNode={selectedNode} updateNodeData={updateNodeData} />
+        <BpmProperties selectedNode={selectedNode} updateNodeData={updateNodeData} changeNodeType={changeNodeType} />
       </div>
     </div>
   );

@@ -97,9 +97,37 @@ export const contratosEdges: Edge[] = [
   { id: 'e-t2_2-end', source: 't2_2', target: 'end', ...defaultEdgeOptions },
 ];
 
+export const licenciamentoNodes: Node[] = [
+  { id: 'start',  type: 'start',        position: { x: 400, y: 50  }, data: { label: 'Protocolo da Solicitação' } },
+  { id: 't1',     type: 'task',         position: { x: 400, y: 200 }, data: { label: 'Análise Prévia', responsavel: 'Meio Ambiente', prazo: 5 } },
+  { id: 'g1',     type: 'gateway',      position: { x: 400, y: 370 }, data: { label: 'Documentação Completa?', type: 'exclusivo' } },
+  { id: 't2_neg', type: 'task',         position: { x: 180, y: 510 }, data: { label: 'Corrigir Documentos', responsavel: 'Solicitante', prazo: 10 } },
+  { id: 't2_pos', type: 'task',         position: { x: 620, y: 510 }, data: { label: 'Vistoria Técnica', responsavel: 'Técnico de Campo', prazo: 15 } },
+  { id: 't3',     type: 'task',         position: { x: 400, y: 680 }, data: { label: 'Emissão de Parecer', responsavel: 'Meio Ambiente', prazo: 7 } },
+  { id: 'g2',     type: 'gateway',      position: { x: 400, y: 840 }, data: { label: 'Licença Aprovada?', type: 'exclusivo' } },
+  { id: 't4_sim', type: 'task-system',  position: { x: 620, y: 990 }, data: { label: 'Emitir Licença', responsavel: 'Sistema', prazo: 0 } },
+  { id: 't4_nao', type: 'task-email',   position: { x: 180, y: 990 }, data: { label: 'Notificar Indeferimento', responsavel: 'Sistema', prazo: 0 } },
+  { id: 'end1',   type: 'end',          position: { x: 620, y: 1140 }, data: { label: 'Licença Emitida' } },
+  { id: 'end2',   type: 'end',          position: { x: 180, y: 1140 }, data: { label: 'Indeferido' } },
+];
+export const licenciamentoEdges: Edge[] = [
+  { id: 'e-s-t1',      source: 'start',  target: 't1',     ...defaultEdgeOptions },
+  { id: 'e-t1-g1',     source: 't1',     target: 'g1',     ...defaultEdgeOptions },
+  { id: 'e-g1-neg',    source: 'g1',     target: 't2_neg', label: 'Não', sourceHandle: 'source-left',   ...defaultEdgeOptions },
+  { id: 'e-g1-pos',    source: 'g1',     target: 't2_pos', label: 'Sim', sourceHandle: 'source-right',  ...defaultEdgeOptions },
+  { id: 'e-neg-t1',    source: 't2_neg', target: 't1',     ...defaultEdgeOptions },
+  { id: 'e-pos-t3',    source: 't2_pos', target: 't3',     ...defaultEdgeOptions },
+  { id: 'e-t3-g2',     source: 't3',     target: 'g2',     ...defaultEdgeOptions },
+  { id: 'e-g2-sim',    source: 'g2',     target: 't4_sim', label: 'Sim', sourceHandle: 'source-right',  ...defaultEdgeOptions },
+  { id: 'e-g2-nao',    source: 'g2',     target: 't4_nao', label: 'Não', sourceHandle: 'source-left',   ...defaultEdgeOptions },
+  { id: 'e-sim-end1',  source: 't4_sim', target: 'end1',   ...defaultEdgeOptions },
+  { id: 'e-nao-end2',  source: 't4_nao', target: 'end2',   ...defaultEdgeOptions },
+];
+
 export const processTemplates: Record<string, { nodes: Node[], edges: Edge[], title: string }> = {
-  'compras': { nodes: comprasNodes, edges: comprasEdges, title: 'Aprovação de Compras' },
-  'admissao': { nodes: admissaoNodes, edges: admissaoEdges, title: 'Admissão de Funcionários' },
-  'atendimento': { nodes: atendimentoNodes, edges: atendimentoEdges, title: 'Atendimento ao Cidadão' },
-  'contratos': { nodes: contratosNodes, edges: contratosEdges, title: 'Gestão de Contratos' }
+  'licenciamento': { nodes: licenciamentoNodes, edges: licenciamentoEdges, title: 'Licenciamento Ambiental' },
+  'compras':       { nodes: comprasNodes,       edges: comprasEdges,       title: 'Aprovação de Compras' },
+  'admissao':      { nodes: admissaoNodes,      edges: admissaoEdges,      title: 'Admissão de Funcionários' },
+  'atendimento':   { nodes: atendimentoNodes,   edges: atendimentoEdges,   title: 'Atendimento ao Cidadão' },
+  'contratos':     { nodes: contratosNodes,     edges: contratosEdges,     title: 'Gestão de Contratos' },
 };

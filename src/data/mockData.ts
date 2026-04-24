@@ -40,6 +40,7 @@ export const processos: Processo[] = [
     versao: 'v3',
     atrasados: 3,
     otimizaveis: 2,
+    templateKey: 'licenciamento',
   },
   {
     id: 'compras-suprimentos',

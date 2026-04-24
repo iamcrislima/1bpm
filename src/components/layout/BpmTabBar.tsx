@@ -4,7 +4,7 @@ import "./BpmTabBar.css";
 const TABS = [
   {
     id: "visao-geral",
-    label: "Visão Geral",
+    label: "Dashboard",
     icon: "fa-regular fa-gauge",
     to: "/processos",
     match: (pathname: string, tab: string | null) =>

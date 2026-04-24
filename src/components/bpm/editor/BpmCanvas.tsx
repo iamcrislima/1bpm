@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -59,6 +59,7 @@ export default function BpmCanvas({
   const { screenToFlowPosition, zoomIn, zoomOut, fitView } = useReactFlow();
   const [zoom, setZoom] = useState(100);
   const [mode, setMode] = useState<'simples' | 'avancado'>('simples');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const onConnect = useCallback((params: Connection | Edge) => {
     setEdges(eds => addEdge({
@@ -102,12 +103,29 @@ export default function BpmCanvas({
     });
   }, [screenToFlowPosition, setNodes, onNodesUpdate]);
 
+  // Delete key — remove selected node + connected edges
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (!selectedNodeId) return;
+      setNodes(nds => nds.filter(n => n.id !== selectedNodeId));
+      setEdges(eds => eds.filter(e => e.source !== selectedNodeId && e.target !== selectedNodeId));
+      setSelectedNodeId(null);
+      onNodeSelect(null);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectedNodeId, setNodes, setEdges, onNodeSelect]);
+
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
     onNodeSelect(node);
+    setSelectedNodeId(node.id);
   };
 
   const onPaneClick = () => {
     onNodeSelect(null);
+    setSelectedNodeId(null);
   };
 
   const handleZoomIn = () => { zoomIn(); setZoom(z => Math.min(z + 10, 200)); };

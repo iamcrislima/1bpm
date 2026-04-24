@@ -46,7 +46,7 @@ function AppLayout() {
   // Breadcrumb dinâmico
   const breadcrumb = (() => {
     const root = { label: '1Doc', to: '/' }
-    const procInteligentes = { label: 'Proc. Inteligentes' }
+    const procInteligentes = { label: 'Proc. Inteligentes', to: '/processos' }
 
     if (location.pathname === '/processos') {
       const tab = searchParams.get('tab')

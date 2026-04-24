@@ -1,12 +1,123 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Handle, Position, NodeToolbar, useReactFlow, MarkerType } from '@xyflow/react';
+
+// ── Gerador de IDs para novos nós ────────────────────────────
+let _nodeCounter = 1000;
+const genId = () => `node_${_nodeCounter++}`;
+
+// ── Opções do menu de ação ───────────────────────────────────
+const ACTION_OPTIONS = [
+  { label: 'Adicionar após',  isGroup: true },
+  { type: 'task',         label: 'Tarefa de Usuário',    icon: 'fa-regular fa-user',        color: '#0058db', bg: '#dce6f5' },
+  { type: 'gateway',      label: 'Gateway Exclusivo',    icon: 'fa-regular fa-code-branch',  color: '#9333ea', bg: '#f3e8ff' },
+  { type: 'end',          label: 'Evento de Fim',        icon: 'fa-regular fa-stop',         color: '#ef4444', bg: '#fee2e2' },
+  { type: 'intermediate', label: 'Evento Intermediário', icon: 'fa-regular fa-circle-dot',   color: '#f59e0b', bg: '#fef3c7' },
+  { type: 'task-email',   label: 'Tarefa de Envio',      icon: 'fa-regular fa-envelope',     color: '#ea580c', bg: '#ffedd5' },
+  { label: '---', isGroup: true },
+  { type: '__delete__',   label: 'Remover elemento',     icon: 'fa-regular fa-trash',        color: '#ef4444', bg: '#fee2e2', danger: true },
+];
+
+// ── Toolbar com botão "+" ────────────────────────────────────
+function NodeActionToolbar({ nodeId, selected }: { nodeId: string; selected: boolean }) {
+  const [open, setOpen] = useState(false);
+  const { getNode, setNodes, setEdges } = useReactFlow();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selected) setOpen(false);
+  }, [selected]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const addNode = (type: string, label: string, icon: string, color: string, bg: string) => {
+    const current = getNode(nodeId);
+    if (!current) return;
+    const newId = genId();
+    setNodes(nds => [...nds, {
+      id: newId,
+      type,
+      position: { x: current.position.x + 240, y: current.position.y },
+      data: { label, icon, color, bg, responsavel: '', prazo: 3 },
+    }]);
+    setEdges(eds => [...eds, {
+      id: `e-${nodeId}-${newId}`,
+      source: nodeId,
+      target: newId,
+      type: 'smoothstep',
+      animated: true,
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
+      style: { stroke: '#0058db', strokeWidth: 2 },
+    }]);
+    setOpen(false);
+  };
+
+  const deleteNode = () => {
+    setNodes(nds => nds.filter(n => n.id !== nodeId));
+    setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
+    setOpen(false);
+  };
+
+  return (
+    <NodeToolbar isVisible={selected} position={Position.Right} offset={10}>
+      <div ref={menuRef} style={{ position: 'relative' }}>
+        <button
+          className="node-plus-btn"
+          onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
+          title="Adicionar / ações"
+        >
+          <i className="fa-regular fa-plus" />
+        </button>
+
+        {open && (
+          <div className="node-action-menu">
+            {ACTION_OPTIONS.map((opt, i) => {
+              if ((opt as any).isGroup) {
+                return (opt as any).label === '---'
+                  ? <div key={i} className="node-action-divider" />
+                  : <div key={i} className="node-action-group">{opt.label}</div>;
+              }
+              const o = opt as { type: string; label: string; icon: string; color: string; bg: string; danger?: boolean };
+              return (
+                <button
+                  key={o.type}
+                  className={`node-action-item${o.danger ? ' node-action-item--danger' : ''}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (o.type === '__delete__') deleteNode();
+                    else addNode(o.type, o.label, o.icon, o.color, o.bg);
+                  }}
+                >
+                  <div className="node-action-item-icon" style={{ background: o.bg, color: o.color }}>
+                    <i className={o.icon} />
+                  </div>
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </NodeToolbar>
+  );
+}
 
 // ── Wrapper genérico para todos os nós ───────────────────────
 function NodeWrapper({
+  id,
   children,
   selected,
   className,
 }: {
+  id: string;
   children: React.ReactNode;
   selected: boolean;
   className: string;
@@ -14,14 +125,15 @@ function NodeWrapper({
   return (
     <div className={`bpm-node ${className} ${selected ? 'bpm-node--selected' : ''}`}>
       {children}
+      <NodeActionToolbar nodeId={id} selected={selected} />
     </div>
   );
 }
 
 // ── START ────────────────────────────────────────────────────
-export function StartNode({ data, selected }: { data: any; selected: boolean }) {
+export function StartNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--start" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--start" selected={selected}>
       <div className="bpm-node-event-circle" style={{ background: '#22c55e', boxShadow: '0 0 0 4px #dcfce7' }}>
         <i className="fa-solid fa-play" style={{ fontSize: 10, color: '#fff', marginLeft: 2 }} />
       </div>
@@ -32,9 +144,9 @@ export function StartNode({ data, selected }: { data: any; selected: boolean }) 
 }
 
 // ── END ──────────────────────────────────────────────────────
-export function EndNode({ data, selected }: { data: any; selected: boolean }) {
+export function EndNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--end" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--end" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-event-circle" style={{ background: '#ef4444', boxShadow: '0 0 0 4px #fee2e2' }}>
         <i className="fa-solid fa-stop" style={{ fontSize: 10, color: '#fff' }} />
@@ -45,9 +157,9 @@ export function EndNode({ data, selected }: { data: any; selected: boolean }) {
 }
 
 // ── INTERMEDIATE ─────────────────────────────────────────────
-export function IntermediateNode({ data, selected }: { data: any; selected: boolean }) {
+export function IntermediateNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--intermediate" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--intermediate" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-event-circle" style={{ background: '#f59e0b', boxShadow: '0 0 0 4px #fef3c7', border: '3px solid #fff' }}>
         <i className="fa-regular fa-circle-dot" style={{ fontSize: 10, color: '#fff' }} />
@@ -59,16 +171,16 @@ export function IntermediateNode({ data, selected }: { data: any; selected: bool
 }
 
 // ── TASK (Humana) ────────────────────────────────────────────
-export function TaskNode({ data, selected }: { data: any; selected: boolean }) {
+export function TaskNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#0058db18', borderBottom: '1px solid #0058db22' }}>
         <div className="bpm-node-icon" style={{ background: '#dce6f5', color: '#0058db' }}>
           <i className="fa-regular fa-user" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#0058db' }}>Tarefa Humana</span>
-        {data.responsavel && <span className="bpm-node-badge">{data.responsavel}</span>}
+        <span className="bpm-node-type-label" style={{ color: '#0058db' }}>Tarefa de Usuário</span>
+        {data.ator && <span className="bpm-node-badge">{data.ator}</span>}
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Nova Tarefa'}</div>
@@ -81,7 +193,7 @@ export function TaskNode({ data, selected }: { data: any; selected: boolean }) {
                 {data.responsavel}
               </span>
             )}
-            {data.prazo !== undefined && (
+            {data.prazo !== undefined && data.prazoTipo !== 'sem-prazo' && (
               <span className="bpm-node-meta-item">
                 <i className="fa-regular fa-clock" />
                 {data.prazo}d
@@ -96,15 +208,15 @@ export function TaskNode({ data, selected }: { data: any; selected: boolean }) {
 }
 
 // ── TASK SYSTEM ──────────────────────────────────────────────
-export function TaskSystemNode({ data, selected }: { data: any; selected: boolean }) {
+export function TaskSystemNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#6366f118', borderBottom: '1px solid #6366f122' }}>
         <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#6366f1' }}>
           <i className="fa-regular fa-gear" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#6366f1' }}>Tarefa de Sistema</span>
+        <span className="bpm-node-type-label" style={{ color: '#6366f1' }}>Sistema</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Tarefa de Sistema'}</div>
@@ -116,9 +228,9 @@ export function TaskSystemNode({ data, selected }: { data: any; selected: boolea
 }
 
 // ── TASK SERVICE ─────────────────────────────────────────────
-export function TaskServiceNode({ data, selected }: { data: any; selected: boolean }) {
+export function TaskServiceNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#0891b218', borderBottom: '1px solid #0891b222' }}>
         <div className="bpm-node-icon" style={{ background: '#cffafe', color: '#0891b2' }}>
@@ -136,15 +248,15 @@ export function TaskServiceNode({ data, selected }: { data: any; selected: boole
 }
 
 // ── TASK SCRIPT ──────────────────────────────────────────────
-export function TaskScriptNode({ data, selected }: { data: any; selected: boolean }) {
+export function TaskScriptNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#7c3aed18', borderBottom: '1px solid #7c3aed22' }}>
         <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#7c3aed' }}>
           <i className="fa-regular fa-code" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#7c3aed' }}>Tarefa de Script</span>
+        <span className="bpm-node-type-label" style={{ color: '#7c3aed' }}>Script</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Script'}</div>
@@ -156,15 +268,15 @@ export function TaskScriptNode({ data, selected }: { data: any; selected: boolea
 }
 
 // ── TASK EMAIL ───────────────────────────────────────────────
-export function TaskEmailNode({ data, selected }: { data: any; selected: boolean }) {
+export function TaskEmailNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#ea580c18', borderBottom: '1px solid #ea580c22' }}>
         <div className="bpm-node-icon" style={{ background: '#ffedd5', color: '#ea580c' }}>
           <i className="fa-regular fa-envelope" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#ea580c' }}>Tarefa de E-mail</span>
+        <span className="bpm-node-type-label" style={{ color: '#ea580c' }}>Tarefa de Envio</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Enviar E-mail'}</div>
@@ -175,16 +287,15 @@ export function TaskEmailNode({ data, selected }: { data: any; selected: boolean
   );
 }
 
-// ── GATEWAY (XOR/Exclusivo) ──────────────────────────────────
-export function GatewayNode({ data, selected }: { data: any; selected: boolean }) {
+// ── GATEWAY (XOR/Paralelo) ───────────────────────────────────
+export function GatewayNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   const isParallel = data.type === 'paralelo';
   const color = isParallel ? '#0ea5e9' : '#9333ea';
-  const bg    = isParallel ? '#e0f2fe'  : '#f3e8ff';
   const icon  = isParallel ? 'fa-regular fa-arrows-split-up-and-left' : 'fa-regular fa-code-branch';
   const label = isParallel ? 'Gateway Paralelo' : 'Gateway Exclusivo';
 
   return (
-    <NodeWrapper className="bpm-node--gateway" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--gateway" selected={selected}>
       <Handle type="target" position={Position.Top}   id="target" className="bpm-handle" />
       <div className="bpm-node-gateway-diamond" style={{ borderColor: color }}>
         <div className="bpm-node-gateway-icon" style={{ color }}>
@@ -202,9 +313,9 @@ export function GatewayNode({ data, selected }: { data: any; selected: boolean }
 }
 
 // ── GATEWAY INCLUSIVO (OR) ────────────────────────────────────
-export function GatewayInclusivoNode({ data, selected }: { data: any; selected: boolean }) {
+export function GatewayInclusivoNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--gateway" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--gateway" selected={selected}>
       <Handle type="target" position={Position.Top}   id="target" className="bpm-handle" />
       <div className="bpm-node-gateway-diamond" style={{ borderColor: '#10b981' }}>
         <div className="bpm-node-gateway-icon" style={{ color: '#10b981' }}>
@@ -222,9 +333,9 @@ export function GatewayInclusivoNode({ data, selected }: { data: any; selected: 
 }
 
 // ── MENSAGEM ─────────────────────────────────────────────────
-export function MsgNode({ data, selected }: { data: any; selected: boolean }) {
+export function MsgNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#2563eb18', borderBottom: '1px solid #2563eb22' }}>
         <div className="bpm-node-icon" style={{ background: '#dbeafe', color: '#2563eb' }}>
@@ -241,9 +352,9 @@ export function MsgNode({ data, selected }: { data: any; selected: boolean }) {
 }
 
 // ── NOTIFICAÇÃO ──────────────────────────────────────────────
-export function NotificationNode({ data, selected }: { data: any; selected: boolean }) {
+export function NotificationNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#d9770618', borderBottom: '1px solid #d9770622' }}>
         <div className="bpm-node-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
@@ -260,9 +371,9 @@ export function NotificationNode({ data, selected }: { data: any; selected: bool
 }
 
 // ── CHATBOT ──────────────────────────────────────────────────
-export function ChatbotNode({ data, selected }: { data: any; selected: boolean }) {
+export function ChatbotNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
   return (
-    <NodeWrapper className="bpm-node--task" selected={selected}>
+    <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <Handle type="target" position={Position.Top} id="target" className="bpm-handle" />
       <div className="bpm-node-header" style={{ background: '#7c3aed18', borderBottom: '1px solid #7c3aed22' }}>
         <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#7c3aed' }}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import NovoProcessoModal from '../components/bpm/NovoProcessoModal'
 import { processos } from '../data/mockData'
 import './ProcessosPage.css'
@@ -29,20 +29,13 @@ const ICONE_MAP: Record<string, string> = {
 // ── Card de Processo ─────────────────────────────────────────
 
 function ProcessoCard({ proc, style }: { proc: typeof processos[0]; style?: React.CSSProperties }) {
-  const navigate = useNavigate()
-
-  const handleEditar = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const dest = proc.templateKey
-      ? `/processos/novo?template=${proc.templateKey}`
-      : '/processos/novo'
-    navigate(dest)
-  }
+  const editorUrl = proc.templateKey
+    ? `/processos/novo?template=${proc.templateKey}`
+    : `/processos/novo?nome=${encodeURIComponent(proc.nome)}`
 
   return (
     <Link
-      to={`/processos/${proc.id}`}
+      to={editorUrl}
       className="processo-card card card-hover animate-fade-in"
       style={style}
     >
@@ -98,10 +91,10 @@ function ProcessoCard({ proc, style }: { proc: typeof processos[0]; style?: Reac
         <span className="processo-data">
           {new Date(proc.ultimaAtualizacao).toLocaleDateString('pt-BR')}
         </span>
-        <button className="processo-editar-btn" onClick={handleEditar} title="Editar fluxo no editor BPM">
+        <span className="processo-editar-btn">
           <i className="fa-regular fa-pen-to-square" />
           Editar fluxo
-        </button>
+        </span>
       </div>
     </Link>
   )
