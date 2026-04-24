@@ -43,7 +43,7 @@ export default function FormulariosPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [formularios, setFormularios] = useState<Formulario[]>(mockFormularios);
   const [editando, setEditando] = useState<Formulario | null>(null);
-  const [_criando, setCriando] = useState(false); void _criando;
+  const [criando, setCriando] = useState(false);
   const [novoNome, setNovoNome] = useState('');
   const [showNomeInput, setShowNomeInput] = useState(false);
 

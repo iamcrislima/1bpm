@@ -179,7 +179,7 @@ export function TaskEmailNode({ data, selected }: { data: any; selected: boolean
 export function GatewayNode({ data, selected }: { data: any; selected: boolean }) {
   const isParallel = data.type === 'paralelo';
   const color = isParallel ? '#0ea5e9' : '#9333ea';
-  const _bg   = isParallel ? '#e0f2fe'  : '#f3e8ff'; void _bg;
+  const bg    = isParallel ? '#e0f2fe'  : '#f3e8ff';
   const icon  = isParallel ? 'fa-regular fa-arrows-split-up-and-left' : 'fa-regular fa-code-branch';
   const label = isParallel ? 'Gateway Paralelo' : 'Gateway Exclusivo';
 
