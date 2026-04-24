@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import FormBuilderPage from '../formBuilder/FormBuilderPage';
+import { useState, lazy, Suspense } from 'react';
 import type { FormFieldData } from '../formBuilder/fieldTypes';
+
+// Importação lazy para isolar erros de inicialização do FormBuilder
+const FormBuilderPage = lazy(() => import('../formBuilder/FormBuilderPage'));
 
 // ── Tipos de nó disponíveis ──────────────────────────────────
 const NODE_TYPES = [
@@ -684,7 +686,8 @@ function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => v
 
   // Agrupa filtrados por categoria
   const porCategoria = filtrados.reduce<Record<string, ExecDef[]>>((acc, e) => {
-    (acc[e.categoria] ??= []).push(e);
+    if (!acc[e.categoria]) acc[e.categoria] = [];
+    acc[e.categoria].push(e);
     return acc;
   }, {});
 
@@ -873,15 +876,17 @@ function TabFormulario({
 
       {/* Form Builder full-screen overlay */}
       {builderOpen && (
-        <FormBuilderPage
-          nomeTarefa={taskName}
-          initialFields={formFields.length > 0 ? formFields : undefined}
-          onClose={() => setBuilderOpen(false)}
-          onSave={(fields) => {
-            update({ formBuilderFields: fields });
-            setBuilderOpen(false);
-          }}
-        />
+        <Suspense fallback={<div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#7d7d7d' }}>Carregando editor de formulário...</div>}>
+          <FormBuilderPage
+            nomeTarefa={taskName}
+            initialFields={formFields.length > 0 ? formFields : undefined}
+            onClose={() => setBuilderOpen(false)}
+            onSave={(fields) => {
+              update({ formBuilderFields: fields });
+              setBuilderOpen(false);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Seção de variáveis — só exibe se um formulário foi selecionado */}

@@ -1,7 +1,38 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Component } from 'react';
+import type { ReactNode, ErrorInfo } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
+
+// ── Error Boundary para capturar crashes de render ────────────
+interface EBState { hasError: boolean; message: string }
+class EditorErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  state: EBState = { hasError: false, message: '' };
+  static getDerivedStateFromError(err: Error): EBState {
+    return { hasError: true, message: err.message };
+  }
+  componentDidCatch(err: Error, info: ErrorInfo) {
+    console.error('[BpmEditor] Render error:', err, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: 40 }}>
+          <i className="fa-regular fa-triangle-exclamation" style={{ fontSize: 40, color: '#ef4444' }} />
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>Erro ao renderizar o painel</div>
+          <div style={{ fontSize: 13, color: '#7d7d7d', maxWidth: 400, textAlign: 'center' }}>{this.state.message}</div>
+          <button
+            style={{ padding: '8px 20px', borderRadius: 8, background: '#0058db', color: 'white', border: 'none', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+            onClick={() => this.setState({ hasError: false, message: '' })}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import BpmSidebar from './BpmSidebar';
 import BpmCanvas from './BpmCanvas';
 import BpmProperties from './BpmProperties';
@@ -166,7 +197,9 @@ export default function BpmEditor() {
             nodeUpdate={nodeUpdate}
           />
         </ReactFlowProvider>
-        <BpmProperties selectedNode={selectedNode} updateNodeData={updateNodeData} changeNodeType={changeNodeType} />
+        <EditorErrorBoundary>
+          <BpmProperties selectedNode={selectedNode} updateNodeData={updateNodeData} changeNodeType={changeNodeType} />
+        </EditorErrorBoundary>
       </div>
     </div>
   );
