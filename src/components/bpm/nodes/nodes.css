@@ -9,7 +9,8 @@
   min-width: 200px;
   max-width: 260px;
   cursor: pointer;
-  overflow: hidden;
+  /* overflow: visible — necessário para os handles não serem cortados */
+  overflow: visible;
 }
 
 .bpm-node:hover {
@@ -34,6 +35,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
+  /* garante que o fundo colorido respeite o border-radius do card */
+  border-radius: 10px 10px 0 0;
 }
 
 .bpm-node-icon {
