@@ -141,7 +141,6 @@ function ProcessoRow({ proc }: { proc: typeof processos[0] }) {
 type ViewMode = 'pastas' | 'compacta' | 'lista'
 
 export default function ProcessosPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   const [busca, setBusca] = useState('')
