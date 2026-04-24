@@ -5,108 +5,107 @@ import { Handle, Position, NodeToolbar, useReactFlow, MarkerType } from '@xyflow
 let _nodeCounter = 1000;
 const genId = () => `node_${_nodeCounter++}`;
 
-// ── Opções do menu de ação ───────────────────────────────────
-const ACTION_OPTIONS = [
-  { label: 'Adicionar após',  isGroup: true },
+// ── Tipos disponíveis no picker ──────────────────────────────
+const ADD_TYPES = [
   { type: 'task',         label: 'Tarefa de Usuário',    icon: 'fa-regular fa-user',        color: '#0058db', bg: '#dce6f5' },
   { type: 'gateway',      label: 'Gateway Exclusivo',    icon: 'fa-regular fa-code-branch',  color: '#9333ea', bg: '#f3e8ff' },
   { type: 'end',          label: 'Evento de Fim',        icon: 'fa-regular fa-stop',         color: '#ef4444', bg: '#fee2e2' },
   { type: 'intermediate', label: 'Evento Intermediário', icon: 'fa-regular fa-circle-dot',   color: '#f59e0b', bg: '#fef3c7' },
   { type: 'task-email',   label: 'Tarefa de Envio',      icon: 'fa-regular fa-envelope',     color: '#ea580c', bg: '#ffedd5' },
-  { label: '---', isGroup: true },
-  { type: '__delete__',   label: 'Remover elemento',     icon: 'fa-regular fa-trash',        color: '#ef4444', bg: '#fee2e2', danger: true },
 ];
 
-// ── Toolbar com botão "+" ────────────────────────────────────
+type Dir = 'top' | 'right' | 'bottom' | 'left';
+
+const DIRS: Array<{ dir: Dir; pos: Position }> = [
+  { dir: 'top',    pos: Position.Top    },
+  { dir: 'right',  pos: Position.Right  },
+  { dir: 'bottom', pos: Position.Bottom },
+  { dir: 'left',   pos: Position.Left   },
+];
+
+// ── Toolbar direcional com 4 botões "+" ──────────────────────
 function NodeActionToolbar({ nodeId, selected }: { nodeId: string; selected: boolean }) {
-  const [open, setOpen] = useState(false);
+  const [openDir, setOpenDir] = useState<Dir | null>(null);
   const { getNode, setNodes, setEdges } = useReactFlow();
-  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { if (!selected) setOpenDir(null); }, [selected]);
 
   useEffect(() => {
-    if (!selected) setOpen(false);
-  }, [selected]);
-
-  useEffect(() => {
-    if (!open) return;
+    if (!openDir) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
+      const target = e.target as HTMLElement;
+      if (!target.closest('.node-dir-menu') && !target.closest('.node-plus-btn')) {
+        setOpenDir(null);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, [openDir]);
 
-  const addNode = (type: string, label: string, icon: string, color: string, bg: string) => {
+  const addNode = (type: string, label: string, icon: string, color: string, bg: string, dir: Dir) => {
     const current = getNode(nodeId);
     if (!current) return;
+    const w = (current as any).measured?.width  ?? 210;
+    const h = (current as any).measured?.height ?? 90;
     const newId = genId();
+
+    const offsets: Record<Dir, { x: number; y: number }> = {
+      right:  { x: w + 60,   y: 0        },
+      left:   { x: -(w + 60),y: 0        },
+      bottom: { x: 0,        y: h + 70   },
+      top:    { x: 0,        y: -(h + 70)},
+    };
+
+    const off = offsets[dir];
     setNodes(nds => [...nds, {
-      id: newId,
-      type,
-      position: { x: current.position.x + 240, y: current.position.y },
+      id: newId, type,
+      position: { x: current.position.x + off.x, y: current.position.y + off.y },
       data: { label, icon, color, bg, responsavel: '', prazo: 3 },
     }]);
     setEdges(eds => [...eds, {
       id: `e-${nodeId}-${newId}`,
-      source: nodeId,
-      target: newId,
-      type: 'smoothstep',
-      animated: true,
+      source: nodeId, target: newId,
+      type: 'smoothstep', animated: true,
       markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
       style: { stroke: '#0058db', strokeWidth: 2 },
     }]);
-    setOpen(false);
-  };
-
-  const deleteNode = () => {
-    setNodes(nds => nds.filter(n => n.id !== nodeId));
-    setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
-    setOpen(false);
+    setOpenDir(null);
   };
 
   return (
-    <NodeToolbar isVisible={selected} position={Position.Right} offset={10}>
-      <div ref={menuRef} style={{ position: 'relative' }}>
-        <button
-          className="node-plus-btn"
-          onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
-          title="Adicionar / ações"
-        >
-          <i className="fa-regular fa-plus" />
-        </button>
+    <>
+      {DIRS.map(({ dir, pos }) => (
+        <NodeToolbar key={dir} isVisible={selected} position={pos} offset={10}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button
+              className="node-plus-btn"
+              onClick={e => { e.stopPropagation(); setOpenDir(v => v === dir ? null : dir); }}
+              title={`Adicionar ${dir === 'top' ? 'acima' : dir === 'bottom' ? 'abaixo' : dir === 'left' ? 'à esquerda' : 'à direita'}`}
+            >
+              <i className="fa-regular fa-plus" />
+            </button>
 
-        {open && (
-          <div className="node-action-menu">
-            {ACTION_OPTIONS.map((opt, i) => {
-              if ((opt as any).isGroup) {
-                return (opt as any).label === '---'
-                  ? <div key={i} className="node-action-divider" />
-                  : <div key={i} className="node-action-group">{opt.label}</div>;
-              }
-              const o = opt as { type: string; label: string; icon: string; color: string; bg: string; danger?: boolean };
-              return (
-                <button
-                  key={o.type}
-                  className={`node-action-item${o.danger ? ' node-action-item--danger' : ''}`}
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (o.type === '__delete__') deleteNode();
-                    else addNode(o.type, o.label, o.icon, o.color, o.bg);
-                  }}
-                >
-                  <div className="node-action-item-icon" style={{ background: o.bg, color: o.color }}>
-                    <i className={o.icon} />
-                  </div>
-                  {o.label}
-                </button>
-              );
-            })}
+            {openDir === dir && (
+              <div className={`node-dir-menu node-dir-menu--${dir}`}>
+                <div className="node-action-group">Adicionar elemento</div>
+                {ADD_TYPES.map(o => (
+                  <button
+                    key={o.type}
+                    className="node-action-item"
+                    onClick={e => { e.stopPropagation(); addNode(o.type, o.label, o.icon, o.color, o.bg, dir); }}
+                  >
+                    <div className="node-action-item-icon" style={{ background: o.bg, color: o.color }}>
+                      <i className={o.icon} />
+                    </div>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </NodeToolbar>
+        </NodeToolbar>
+      ))}
+    </>
   );
 }
 

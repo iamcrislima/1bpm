@@ -1096,7 +1096,48 @@
   box-shadow: 0 4px 12px rgba(0,88,219,0.45);
 }
 
-/* Menu de ações do nó */
+/* Menu direcional — base */
+.node-dir-menu {
+  position: absolute;
+  z-index: 100;
+  background: var(--bg-white);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 210px;
+  padding: 6px 0;
+  animation: fadeIn 0.1s ease;
+}
+
+/* Direita: menu abre para a direita do botão */
+.node-dir-menu--right {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Esquerda: menu abre para a esquerda do botão */
+.node-dir-menu--left {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Baixo: menu abre para baixo do botão */
+.node-dir-menu--bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Cima: menu abre para cima do botão */
+.node-dir-menu--top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Legado (compatibilidade) */
 .node-action-menu {
   position: absolute;
   left: 36px;
