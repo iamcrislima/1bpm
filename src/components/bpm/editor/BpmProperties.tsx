@@ -35,15 +35,173 @@ const ATORES = [
   'Administrador do Sistema',
 ];
 
-const EXECUTAVEIS_MOCK = [
-  'Gerar peça',
-  'Enviar e-mail de notificação',
-  'Assinar digitalmente',
-  'Integrar com TCE-SC',
-  'Gerar PDF',
-  'Consultar CPF na Receita',
-  'Notificar via WhatsApp',
-  'Exportar para planilha',
+// ── Variáveis de processo disponíveis para mapeamento ────────
+const VARIAVEIS_PROCESSO = [
+  { key: 'FD.respForm',        label: 'Resposta do formulário' },
+  { key: 'CPA.cdProcesso',     label: 'Código do processo' },
+  { key: 'login',              label: 'Login do usuário' },
+  { key: 'nomeDocVist',        label: 'Nome do documento de vistoria' },
+  { key: 'CPA.nmProcesso',     label: 'Nome do processo' },
+  { key: 'CPA.dtAbertura',     label: 'Data de abertura' },
+  { key: 'CPA.cdSolicitante',  label: 'Código do solicitante' },
+  { key: 'CPA.nmSolicitante',  label: 'Nome do solicitante' },
+  { key: 'CPA.emailResponsavel', label: 'E-mail do responsável' },
+];
+
+// ── Catálogo de executáveis com nomes amigáveis ───────────────
+interface ExecParam { key: string; label: string; obrigatorio?: boolean }
+interface ExecDef {
+  value: string;
+  label: string;
+  descricao: string;
+  icon: string;
+  cor: string;
+  categoria: string;
+  entradas: ExecParam[];
+  saidas: ExecParam[];
+}
+
+const EXECUTAVEIS_CATALOGO: ExecDef[] = [
+  {
+    value: 'incluir-docs-elaboracao',
+    label: 'Adicionar documentos em elaboração',
+    descricao: 'Cria novos documentos em modo rascunho vinculados ao processo.',
+    icon: 'fa-regular fa-file-plus',
+    cor: '#0058db', categoria: 'Documentos',
+    entradas: [
+      { key: 'cdProcesso',  label: 'Código do processo',    obrigatorio: true },
+      { key: 'cdUsuario',   label: 'Usuário responsável',   obrigatorio: true },
+      { key: 'nomeDocumento', label: 'Nome do documento' },
+    ],
+    saidas: [
+      { key: 'idDocumento', label: 'ID do documento gerado' },
+    ],
+  },
+  {
+    value: 'inserir-pasta-digital',
+    label: 'Inserir na pasta digital',
+    descricao: 'Salva documentos diretamente na pasta digital do processo.',
+    icon: 'fa-regular fa-folder-plus',
+    cor: '#0891b2', categoria: 'Documentos',
+    entradas: [
+      { key: 'answerId',              label: 'ID da resposta do formulário', obrigatorio: true },
+      { key: 'cdProcesso',            label: 'Código do processo',           obrigatorio: true },
+      { key: 'cdUsuario',             label: 'Usuário responsável',          obrigatorio: true },
+      { key: 'nomeDocumentoResposta', label: 'Nome do documento de resposta' },
+    ],
+    saidas: [],
+  },
+  {
+    value: 'inserir-modelo-anexo',
+    label: 'Inserir modelo como anexo',
+    descricao: 'Gera um documento a partir de um modelo e o anexa ao processo.',
+    icon: 'fa-regular fa-file-import',
+    cor: '#7c3aed', categoria: 'Documentos',
+    entradas: [
+      { key: 'cdModelo',   label: 'Código do modelo',   obrigatorio: true },
+      { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
+    ],
+    saidas: [
+      { key: 'idAnexo', label: 'ID do anexo gerado' },
+    ],
+  },
+  {
+    value: 'mesclar-documentos',
+    label: 'Mesclar documentos em PDF',
+    descricao: 'Une múltiplos documentos em um único arquivo PDF.',
+    icon: 'fa-regular fa-files',
+    cor: '#ea580c', categoria: 'Documentos',
+    entradas: [
+      { key: 'listaIds',  label: 'Lista de IDs dos documentos', obrigatorio: true },
+      { key: 'nomeArquivo', label: 'Nome do arquivo final' },
+    ],
+    saidas: [
+      { key: 'idPdf', label: 'ID do PDF gerado' },
+    ],
+  },
+  {
+    value: 'vincular-interessado',
+    label: 'Vincular interessado ao processo',
+    descricao: 'Associa uma pessoa física ou jurídica como interessada no processo.',
+    icon: 'fa-regular fa-user-plus',
+    cor: '#0f6b3e', categoria: 'Processo',
+    entradas: [
+      { key: 'cdProcesso',  label: 'Código do processo',    obrigatorio: true },
+      { key: 'cdInteressado', label: 'Código do interessado', obrigatorio: true },
+    ],
+    saidas: [],
+  },
+  {
+    value: 'enviar-email',
+    label: 'Enviar e-mail de notificação',
+    descricao: 'Dispara uma mensagem de e-mail para os envolvidos no processo.',
+    icon: 'fa-regular fa-envelope',
+    cor: '#d97706', categoria: 'Comunicação',
+    entradas: [
+      { key: 'destinatario', label: 'Destinatário (e-mail)',  obrigatorio: true },
+      { key: 'assunto',      label: 'Assunto', obrigatorio: true },
+      { key: 'corpo',        label: 'Corpo da mensagem' },
+    ],
+    saidas: [],
+  },
+  {
+    value: 'assinar-digitalmente',
+    label: 'Assinar digitalmente',
+    descricao: 'Solicita assinatura digital de um documento via certificado.',
+    icon: 'fa-regular fa-signature',
+    cor: '#7c3aed', categoria: 'Assinatura',
+    entradas: [
+      { key: 'idDocumento', label: 'ID do documento',  obrigatorio: true },
+      { key: 'cdAssinante', label: 'Código do assinante' },
+    ],
+    saidas: [
+      { key: 'idAssinatura', label: 'ID da assinatura' },
+      { key: 'dataAssinatura', label: 'Data e hora da assinatura' },
+    ],
+  },
+  {
+    value: 'consultar-cpf',
+    label: 'Consultar CPF na Receita Federal',
+    descricao: 'Verifica a situação cadastral de um CPF junto à Receita Federal.',
+    icon: 'fa-regular fa-id-card',
+    cor: '#0891b2', categoria: 'Integração',
+    entradas: [
+      { key: 'cpf', label: 'CPF a consultar', obrigatorio: true },
+    ],
+    saidas: [
+      { key: 'situacao',  label: 'Situação cadastral' },
+      { key: 'nomeCompleto', label: 'Nome completo' },
+    ],
+  },
+  {
+    value: 'integrar-tce',
+    label: 'Enviar dados ao TCE-SC',
+    descricao: 'Exporta informações do processo para o sistema do TCE-SC.',
+    icon: 'fa-regular fa-cloud-arrow-up',
+    cor: '#6366f1', categoria: 'Integração',
+    entradas: [
+      { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
+      { key: 'payload',    label: 'Dados a exportar' },
+    ],
+    saidas: [
+      { key: 'protocolo', label: 'Protocolo de envio' },
+    ],
+  },
+  {
+    value: 'gerar-pdf',
+    label: 'Gerar PDF do processo',
+    descricao: 'Cria um PDF consolidado com as informações do processo.',
+    icon: 'fa-regular fa-file-pdf',
+    cor: '#ef4444', categoria: 'Documentos',
+    entradas: [
+      { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
+      { key: 'template',   label: 'Modelo de layout' },
+    ],
+    saidas: [
+      { key: 'idPdf', label: 'ID do PDF gerado' },
+      { key: 'urlPdf', label: 'URL de acesso ao PDF' },
+    ],
+  },
 ];
 
 // ── Accordion section ────────────────────────────────────────
@@ -333,84 +491,251 @@ function TabAtor({ data, update }: { data: any; update: (patch: any) => void }) 
 }
 
 // ── Aba: Executáveis ─────────────────────────────────────────
-function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => void }) {
-  const [busca, setBusca] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const executaveis: string[] = data.executaveis || [];
+interface ExecVinculo {
+  value: string;               // chave do executável
+  entradaMap: Record<string, string>; // param.key → variavel do processo
+  saidaMap:   Record<string, string>; // param.key → variavel do processo
+}
 
-  const filtrados = EXECUTAVEIS_MOCK.filter(
-    e => e.toLowerCase().includes(busca.toLowerCase()) && !executaveis.includes(e)
+function ExecCard({
+  vinculo,
+  onChange,
+  onRemove,
+}: {
+  vinculo: ExecVinculo;
+  onChange: (v: ExecVinculo) => void;
+  onRemove: () => void;
+}) {
+  const [expanded, setExpanded]   = useState(false);
+  const [abaAtiva, setAbaAtiva]   = useState<'entradas' | 'saidas'>('entradas');
+
+  const def = EXECUTAVEIS_CATALOGO.find(e => e.value === vinculo.value);
+  if (!def) return null;
+
+  const setEntrada = (paramKey: string, varKey: string) =>
+    onChange({ ...vinculo, entradaMap: { ...vinculo.entradaMap, [paramKey]: varKey } });
+
+  const setSaida = (paramKey: string, varKey: string) =>
+    onChange({ ...vinculo, saidaMap: { ...vinculo.saidaMap, [paramKey]: varKey } });
+
+  const totalMapeados =
+    Object.values(vinculo.entradaMap).filter(Boolean).length +
+    Object.values(vinculo.saidaMap).filter(Boolean).length;
+
+  return (
+    <div className="cfg-exec-card">
+      {/* Cabeçalho do card */}
+      <div className="cfg-exec-card-header" onClick={() => setExpanded(x => !x)}>
+        <div className="cfg-exec-card-icon" style={{ background: def.cor + '18', color: def.cor }}>
+          <i className={def.icon} />
+        </div>
+        <div className="cfg-exec-card-info">
+          <span className="cfg-exec-card-label">{def.label}</span>
+          <span className="cfg-exec-card-cat">
+            {def.categoria}
+            {totalMapeados > 0 && (
+              <span className="cfg-exec-badge">{totalMapeados} mapeado{totalMapeados !== 1 ? 's' : ''}</span>
+            )}
+          </span>
+        </div>
+        <div className="cfg-exec-card-btns" onClick={e => e.stopPropagation()}>
+          <button
+            className="cfg-icon-btn red"
+            title="Remover"
+            onClick={onRemove}
+          >
+            <i className="fa-regular fa-xmark" />
+          </button>
+        </div>
+        <i className={`fa-regular fa-chevron-${expanded ? 'up' : 'down'} cfg-exec-chevron`} />
+      </div>
+
+      {/* Painel expansível de mapeamento */}
+      {expanded && (
+        <div className="cfg-exec-card-body">
+          <p className="cfg-exec-desc">{def.descricao}</p>
+
+          {/* Mini tabs */}
+          <div className="cfg-exec-tabs">
+            <button
+              className={`cfg-exec-tab ${abaAtiva === 'entradas' ? 'active' : ''}`}
+              onClick={() => setAbaAtiva('entradas')}
+            >
+              <i className="fa-regular fa-arrow-right-to-bracket" />
+              Parâmetros de entrada
+              {def.entradas.length > 0 && (
+                <span className="cfg-exec-tab-count">{def.entradas.length}</span>
+              )}
+            </button>
+            <button
+              className={`cfg-exec-tab ${abaAtiva === 'saidas' ? 'active' : ''}`}
+              onClick={() => setAbaAtiva('saidas')}
+            >
+              <i className="fa-regular fa-arrow-right-from-bracket" />
+              Variáveis de retorno
+              {def.saidas.length > 0 && (
+                <span className="cfg-exec-tab-count">{def.saidas.length}</span>
+              )}
+            </button>
+          </div>
+
+          {/* Mapeamento de entradas */}
+          {abaAtiva === 'entradas' && (
+            <div className="cfg-exec-map-list">
+              {def.entradas.length === 0 ? (
+                <p className="cfg-exec-no-params">Este executável não recebe parâmetros.</p>
+              ) : def.entradas.map(p => (
+                <div key={p.key} className="cfg-exec-map-row">
+                  <div className="cfg-exec-map-param">
+                    <span className="cfg-exec-param-label">
+                      {p.label}
+                      {p.obrigatorio && <span className="cfg-exec-required"> *</span>}
+                    </span>
+                    <span className="cfg-exec-param-key">{p.key}</span>
+                  </div>
+                  <i className="fa-regular fa-arrow-left cfg-exec-map-arrow" />
+                  <select
+                    className="cfg-select cfg-exec-map-select"
+                    value={vinculo.entradaMap[p.key] || ''}
+                    onChange={e => setEntrada(p.key, e.target.value)}
+                  >
+                    <option value="">Selecione a variável...</option>
+                    {VARIAVEIS_PROCESSO.map(v => (
+                      <option key={v.key} value={v.key}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Mapeamento de saídas */}
+          {abaAtiva === 'saidas' && (
+            <div className="cfg-exec-map-list">
+              {def.saidas.length === 0 ? (
+                <p className="cfg-exec-no-params">Este executável não retorna variáveis.</p>
+              ) : def.saidas.map(p => (
+                <div key={p.key} className="cfg-exec-map-row">
+                  <div className="cfg-exec-map-param">
+                    <span className="cfg-exec-param-label">{p.label}</span>
+                    <span className="cfg-exec-param-key">{p.key}</span>
+                  </div>
+                  <i className="fa-regular fa-arrow-right cfg-exec-map-arrow" />
+                  <select
+                    className="cfg-select cfg-exec-map-select"
+                    value={vinculo.saidaMap[p.key] || ''}
+                    onChange={e => setSaida(p.key, e.target.value)}
+                  >
+                    <option value="">Salvar em...</option>
+                    {VARIAVEIS_PROCESSO.map(v => (
+                      <option key={v.key} value={v.key}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => void }) {
+  const [busca, setBusca]           = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const vinculos: ExecVinculo[]     = data.execVinculos || [];
+
+  const jaAdicionados = new Set(vinculos.map(v => v.value));
+  const filtrados = EXECUTAVEIS_CATALOGO.filter(
+    e =>
+      !jaAdicionados.has(e.value) &&
+      (e.label.toLowerCase().includes(busca.toLowerCase()) ||
+       e.categoria.toLowerCase().includes(busca.toLowerCase()))
   );
 
-  const addExec = (exec: string) => {
-    update({ executaveis: [...executaveis, exec] });
+  // Agrupa filtrados por categoria
+  const porCategoria = filtrados.reduce<Record<string, ExecDef[]>>((acc, e) => {
+    (acc[e.categoria] ??= []).push(e);
+    return acc;
+  }, {});
+
+  const addExec = (def: ExecDef) => {
+    const novo: ExecVinculo = { value: def.value, entradaMap: {}, saidaMap: {} };
+    update({ execVinculos: [...vinculos, novo] });
     setBusca('');
     setShowDropdown(false);
   };
 
-  const removeExec = (exec: string) => {
-    update({ executaveis: executaveis.filter(e => e !== exec) });
+  const updateVinculo = (idx: number, v: ExecVinculo) => {
+    const next = vinculos.map((x, i) => i === idx ? v : x);
+    update({ execVinculos: next });
+  };
+
+  const removeVinculo = (idx: number) => {
+    update({ execVinculos: vinculos.filter((_, i) => i !== idx) });
   };
 
   return (
-    <Section title="Configuração dos executáveis">
+    <Section title="Executáveis vinculados">
+      {/* Busca */}
       <div className="cfg-field">
-        <FieldLabel>Executável</FieldLabel>
+        <FieldLabel>Adicionar executável</FieldLabel>
         <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            className="cfg-input"
-            placeholder="Digite para pesquisar..."
-            value={busca}
-            onChange={e => { setBusca(e.target.value); setShowDropdown(true); }}
-            onFocus={() => setShowDropdown(true)}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          />
-          {showDropdown && filtrados.length > 0 && (
-            <div className="cfg-dropdown">
-              {filtrados.map(e => (
-                <button
-                  key={e}
-                  className="cfg-dropdown-item"
-                  onMouseDown={() => addExec(e)}
-                >
-                  {e}
-                </button>
+          <div className="cfg-exec-search-wrap">
+            <i className="fa-regular fa-magnifying-glass cfg-exec-search-icon" />
+            <input
+              type="text"
+              className="cfg-input cfg-exec-search-input"
+              placeholder="Buscar por nome ou categoria..."
+              value={busca}
+              onChange={e => { setBusca(e.target.value); setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 180)}
+            />
+          </div>
+          {showDropdown && (
+            <div className="cfg-dropdown cfg-exec-dropdown">
+              {Object.keys(porCategoria).length === 0 ? (
+                <div className="cfg-dropdown-empty">Nenhum resultado</div>
+              ) : Object.entries(porCategoria).map(([cat, items]) => (
+                <div key={cat}>
+                  <div className="cfg-dropdown-group-label">{cat}</div>
+                  {items.map(def => (
+                    <button
+                      key={def.value}
+                      className="cfg-dropdown-item cfg-exec-dropdown-item"
+                      onMouseDown={() => addExec(def)}
+                    >
+                      <span className="cfg-exec-di-icon" style={{ color: def.cor }}>
+                        <i className={def.icon} />
+                      </span>
+                      <span className="cfg-exec-di-label">{def.label}</span>
+                    </button>
+                  ))}
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {executaveis.length > 0 && (
-        <div className="cfg-exec-table">
-          <div className="cfg-exec-header">
-            <span>Nome</span>
-            <span>Ações</span>
-          </div>
-          {executaveis.map(exec => (
-            <div key={exec} className="cfg-exec-row">
-              <span className="cfg-exec-name">
-                <i className="fa-regular fa-grip-dots-vertical" style={{ color: '#999', marginRight: 6 }} />
-                {exec}
-              </span>
-              <div className="cfg-exec-actions">
-                <button className="cfg-icon-btn blue" title="Editar">
-                  <i className="fa-regular fa-pen" />
-                </button>
-                <button className="cfg-icon-btn red" title="Remover" onClick={() => removeExec(exec)}>
-                  <i className="fa-regular fa-xmark" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {executaveis.length === 0 && (
+      {/* Lista de executáveis vinculados */}
+      {vinculos.length === 0 ? (
         <div className="cfg-empty-state">
           <i className="fa-regular fa-cube" />
           <span>Nenhum executável vinculado</span>
+        </div>
+      ) : (
+        <div className="cfg-exec-cards">
+          {vinculos.map((v, i) => (
+            <ExecCard
+              key={v.value}
+              vinculo={v}
+              onChange={nv => updateVinculo(i, nv)}
+              onRemove={() => removeVinculo(i)}
+            />
+          ))}
         </div>
       )}
     </Section>

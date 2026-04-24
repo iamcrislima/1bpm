@@ -898,47 +898,259 @@
   color: var(--primary-pure);
 }
 
-/* Tabela de executáveis */
-.cfg-exec-table {
-  border: 1px solid var(--border-light);
+/* ── Executáveis — novo design ── */
+
+/* Busca com ícone */
+.cfg-exec-search-wrap {
+  position: relative;
+}
+.cfg-exec-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+.cfg-exec-search-input {
+  padding-left: 30px !important;
+}
+
+/* Dropdown de executáveis com agrupamento */
+.cfg-exec-dropdown {
+  max-height: 260px;
+}
+.cfg-dropdown-group-label {
+  padding: 6px 12px 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-light);
+}
+.cfg-dropdown-empty {
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.cfg-exec-dropdown-item {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px !important;
+}
+.cfg-exec-di-icon {
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.cfg-exec-di-label {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* Lista de cards */
+.cfg-exec-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Card de executável */
+.cfg-exec-card {
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   overflow: hidden;
+  background: var(--bg-white);
 }
 
-.cfg-exec-header {
+.cfg-exec-card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 7px 12px;
-  background: var(--bg-surface);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-light);
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
 }
+.cfg-exec-card-header:hover { background: var(--bg-surface); }
 
-.cfg-exec-row {
+.cfg-exec-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
+  justify-content: center;
   font-size: 13px;
-  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
 }
 
-.cfg-exec-row:last-child {
-  border-bottom: none;
-}
-
-.cfg-exec-name {
+.cfg-exec-card-info {
   flex: 1;
-  color: var(--text-primary);
-  font-weight: 500;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.cfg-exec-actions {
+.cfg-exec-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-exec-card-cat {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cfg-exec-badge {
+  background: var(--primary-light);
+  color: var(--primary-pure);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+}
+
+.cfg-exec-card-btns {
   display: flex;
   gap: 4px;
+}
+
+.cfg-exec-chevron {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Corpo do card expansível */
+.cfg-exec-card-body {
+  padding: 12px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-surface);
+}
+
+.cfg-exec-desc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+/* Mini tabs dentro do card */
+.cfg-exec-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 4px;
+}
+
+.cfg-exec-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.cfg-exec-tab:hover { background: var(--bg-white); color: var(--text-primary); }
+.cfg-exec-tab.active { background: var(--bg-white); color: var(--primary-pure); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.cfg-exec-tab i { font-size: 10px; }
+
+.cfg-exec-tab-count {
+  background: var(--primary-light);
+  color: var(--primary-pure);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 100px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* Lista de mapeamento */
+.cfg-exec-map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg-exec-no-params {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 12px;
+  margin: 0;
+}
+
+.cfg-exec-map-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-exec-map-param {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.cfg-exec-param-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-exec-required { color: var(--danger); }
+
+.cfg-exec-param-key {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-exec-map-arrow {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.cfg-exec-map-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px !important;
+  padding: 5px 8px !important;
 }
 
 /* Botões de ícone */
