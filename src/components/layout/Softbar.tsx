@@ -109,6 +109,7 @@ export default function Softbar({
               {[
                 { id: "map", label: "Map", description: "Visualização geoespacial", Icon: IconMap },
                 { id: "analytics", label: "Analytics", description: "Inteligência de dados", Icon: IconAnalytics },
+                { id: "mensageria", label: "Mensageria", description: "Automação de mensagens", Icon: IconMensageria },
               ].map((tool) => (
                 <li key={tool.id} className="softbar__item-wrapper">
                   <button
@@ -174,6 +175,10 @@ function IconMap() {
 
 function IconAnalytics() {
   return <i className="fa-duotone fa-chart-line" />;
+}
+
+function IconMensageria() {
+  return <i className="fa-duotone fa-message-check" />;
 }
 
 function IconProfile() {
