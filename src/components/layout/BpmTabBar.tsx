@@ -16,7 +16,9 @@ const TABS = [
     icon: "fa-regular fa-diagram-project",
     to: "/processos/fluxos",
     match: (pathname: string, tab: string | null) =>
-      pathname.startsWith("/processos/") && tab !== "automacoes",
+      pathname.startsWith("/processos/") &&
+      tab !== "automacoes" &&
+      !pathname.startsWith("/processos/automacoes"),
   },
   {
     id: "formularios",
@@ -30,7 +32,8 @@ const TABS = [
     label: "Automações",
     icon: "fa-regular fa-robot",
     to: "/processos?tab=automacoes",
-    match: (_pathname: string, tab: string | null) => tab === "automacoes",
+    match: (pathname: string, tab: string | null) =>
+      tab === "automacoes" || pathname.startsWith("/processos/automacoes"),
   },
 ];
 

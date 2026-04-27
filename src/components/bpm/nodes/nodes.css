@@ -25,6 +25,32 @@
   transform: translateY(-2px);
 }
 
+/* ── Simulação de fluxo ── */
+.react-flow__node.sim-ativo .bpm-node,
+.react-flow__node.sim-ativo .bpm-node-gateway {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.22), 0 0 24px rgba(34,197,94,0.18) !important;
+  animation: sim-pulse 0.7s ease-in-out infinite alternate;
+}
+
+.react-flow__node.sim-concluido .bpm-node,
+.react-flow__node.sim-concluido .bpm-node-gateway {
+  border-color: #86efac !important;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.12) !important;
+  opacity: 0.75;
+}
+
+@keyframes sim-pulse {
+  from {
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.22), 0 0 24px rgba(34,197,94,0.14);
+    transform: scale(1.01);
+  }
+  to {
+    box-shadow: 0 0 0 7px rgba(34,197,94,0.12), 0 0 36px rgba(34,197,94,0.22);
+    transform: scale(1.03);
+  }
+}
+
 /* ── Nó Tarefa (retangular) ── */
 .bpm-node--task {
   /* herdado do .bpm-node */

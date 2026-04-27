@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { processos, dashboard } from '../data/mockData'
 import NovoProcessoModal from '../components/bpm/NovoProcessoModal'
+import AutomacoesPage from './AutomacoesPage'
+import AutomacaoErrorBoundary from '../components/layout/AutomacaoErrorBoundary'
 import './VisaoGeralPage.css'
 
 // ── Mock: fila de tarefas aguardando ação do usuário ────────
@@ -9,7 +11,7 @@ const MINHA_FILA = [
   {
     id: 'fila-1',
     nome: 'Licenciamento Ambiental',
-    numero: '2024/0842',
+    numero: '2026/0842',
     area: 'Meio Ambiente',
     prazo: 2,
     urgente: true,
@@ -19,28 +21,28 @@ const MINHA_FILA = [
   {
     id: 'fila-2',
     nome: 'Gestão de Contratos',
-    numero: '2024/0311',
+    numero: '2026/0311',
     area: 'Jurídico',
     prazo: 5,
     urgente: false,
-    processoId: 'contratos',
+    processoId: 'gestao-contratos',
     etapa: 'Revisão jurídica',
   },
   {
     id: 'fila-3',
-    nome: 'Atendimento ao Cidadão',
-    numero: '2024/1105',
-    area: 'Atendimento',
+    nome: 'Ouvidoria',
+    numero: '2026/1105',
+    area: 'Atendimento ao Cidadão',
     prazo: 1,
     urgente: true,
-    processoId: 'atendimento-cidadao',
-    etapa: 'Análise de demanda',
+    processoId: 'ouvidoria',
+    etapa: 'Análise da manifestação',
   },
   {
     id: 'fila-4',
     nome: 'Admissão de Servidores',
-    numero: '2024/0028',
-    area: 'RH',
+    numero: '2026/0028',
+    area: 'Recursos Humanos',
     prazo: 7,
     urgente: false,
     processoId: 'admissao-servidores',
@@ -63,11 +65,11 @@ const volumePorArea = (() => {
 
 // ── Paleta de cores por área ────────────────────────────────
 const AREA_COLORS: Record<string, string> = {
-  'Atendimento':  'var(--warning)',
-  'Meio Ambiente':'var(--success)',
-  'Administrativo': 'var(--primary-pure)',
-  'Jurídico':     'var(--danger)',
-  'RH':           'var(--info)',
+  'Atendimento ao Cidadão': 'var(--warning)',
+  'Meio Ambiente':          'var(--success)',
+  'Administrativo':         'var(--primary-pure)',
+  'Jurídico':               'var(--danger)',
+  'Recursos Humanos':       'var(--info)',
 }
 
 export default function VisaoGeralPage() {
@@ -78,27 +80,9 @@ export default function VisaoGeralPage() {
 
   if (tab === 'automacoes') {
     return (
-      <div key="automacoes" className="vg-page animate-fade-in">
-        <div className="vg-header">
-          <div className="vg-header-left">
-            <h1 className="vg-title">Automações Globais</h1>
-            <p className="vg-subtitle">
-              Crie e gerencie regras de automação que funcionam em todos os fluxos.
-            </p>
-          </div>
-        </div>
-        <div className="automacoes-empty">
-          <i className="fa-regular fa-bolt automacoes-empty-icon" />
-          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '8px 0 4px', color: 'var(--text-primary)' }}>Nenhuma automação global configurada</h3>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            As automações globais permitem criar regras que disparam ações automáticas independentes de fluxos específicos.
-          </p>
-          <button className="btn btn-primary" style={{ marginTop: 16 }}>
-            <i className="fa-regular fa-plus" />
-            Nova Automação Global
-          </button>
-        </div>
-      </div>
+      <AutomacaoErrorBoundary>
+        <AutomacoesPage />
+      </AutomacaoErrorBoundary>
     )
   }
 

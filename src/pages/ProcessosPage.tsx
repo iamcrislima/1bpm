@@ -24,6 +24,10 @@ const ICONE_MAP: Record<string, string> = {
   users: '👥',
   'user-plus': '👤',
   'check-circle': '✅',
+  'calendar-alt': '📅',
+  megaphone: '📢',
+  store: '🏪',
+  gavel: '⚖️',
 }
 
 // ── Card de Processo ─────────────────────────────────────────

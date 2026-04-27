@@ -22,19 +22,18 @@ import {
 } from '../nodes/CustomNodes';
 import '../nodes/nodes.css';
 
-// ── Aresta com label editável inline ────────────────────────
+// ── Aresta com label editável + token de simulação ──────────
 function LabeledEdge({
   id,
   sourceX, sourceY, targetX, targetY,
   sourcePosition, targetPosition,
   style, markerEnd, selected,
-  label,
+  label, data,
 }: EdgeProps) {
   const { setEdges } = useReactFlow();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(String(label ?? ''));
 
-  // Sincroniza se o label mudar externamente
   useEffect(() => { setText(String(label ?? '')); }, [label]);
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
@@ -48,10 +47,39 @@ function LabeledEdge({
   }, [id, text, setEdges]);
 
   const hasText = text.trim().length > 0;
+  const isSimulating = Boolean((data as any)?.simulating);
+  const simKey = (data as any)?.simKey ?? 0;
 
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+
+      {/* Bolinha animada de simulação — percorre a aresta via animateMotion */}
+      {isSimulating && (
+        <g key={`tok-${id}-${simKey}`} style={{ pointerEvents: 'none' }}>
+          {/* Anel externo branco (halo) */}
+          <circle r="11" fill="white" opacity="0.85">
+            <animateMotion
+              dur="0.85s" repeatCount="1" fill="freeze" path={edgePath}
+              calcMode="spline" keyTimes="0;1" keySplines="0.42 0 0.58 1"
+            />
+          </circle>
+          {/* Bolinha verde */}
+          <circle r="7" fill="#22c55e">
+            <animateMotion
+              dur="0.85s" repeatCount="1" fill="freeze" path={edgePath}
+              calcMode="spline" keyTimes="0;1" keySplines="0.42 0 0.58 1"
+            />
+          </circle>
+          {/* Brilho interno */}
+          <circle r="3" fill="white" opacity="0.7">
+            <animateMotion
+              dur="0.85s" repeatCount="1" fill="freeze" path={edgePath}
+              calcMode="spline" keyTimes="0;1" keySplines="0.42 0 0.58 1"
+            />
+          </circle>
+        </g>
+      )}
 
       <EdgeLabelRenderer>
         <div
@@ -78,14 +106,10 @@ function LabeledEdge({
           ) : (
             <div
               className={`edge-label-pill${hasText ? ' has-text' : ''}${selected ? ' selected' : ''}`}
-              onClick={() => setEditing(true)}
+              onClick={e => { e.stopPropagation(); setEditing(true); }}
               title={hasText ? 'Clique para editar a condição' : 'Clique para adicionar uma condição'}
             >
-              {hasText
-                ? text
-                : selected
-                  ? <><i className="fa-regular fa-pen" style={{ fontSize: 9, marginRight: 4 }} />condição</>
-                  : null}
+              {hasText ? text : selected ? 'condição' : null}
             </div>
           )}
         </div>
@@ -129,17 +153,27 @@ interface NodePatch {
 interface BpmCanvasProps {
   onNodeSelect: (node: Node | null) => void;
   onNodesUpdate?: (nodes: Node[]) => void;
+  onEdgesUpdate?: (edges: Edge[]) => void;
   initialNodes?: Node[];
   initialEdges?: Edge[];
   nodeUpdate?: NodePatch | null;
+  simAtivos?: Set<string>;
+  simConcluidos?: Set<string>;
+  simTokenEdges?: Set<string>;
+  simTokenKey?: number;
 }
 
 export default function BpmCanvas({
   onNodeSelect,
   onNodesUpdate,
+  onEdgesUpdate,
   initialNodes = [],
   initialEdges = [],
   nodeUpdate = null,
+  simAtivos,
+  simConcluidos,
+  simTokenEdges,
+  simTokenKey = 0,
 }: BpmCanvasProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -156,6 +190,35 @@ export default function BpmCanvas({
       nds.map(n => n.id === nodeUpdate.id ? { ...n, data: nodeUpdate.data } : n)
     );
   }, [nodeUpdate, setNodes]);
+
+  // Aplica classNames de simulação nos nós
+  useLayoutEffect(() => {
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      className: simAtivos?.has(n.id)
+        ? 'sim-ativo'
+        : simConcluidos?.has(n.id)
+          ? 'sim-concluido'
+          : '',
+    })));
+  }, [simAtivos, simConcluidos, setNodes]);
+
+  // Marca arestas com token de simulação (aciona a bolinha animada)
+  useLayoutEffect(() => {
+    setEdges(eds => eds.map(e => ({
+      ...e,
+      data: {
+        ...((e.data as any) ?? {}),
+        simulating: simTokenEdges?.has(e.id) ?? false,
+        simKey: simTokenKey,
+      },
+    })));
+  }, [simTokenEdges, simTokenKey, setEdges]);
+
+  // Notifica o pai quando as arestas mudam (para lógica de simulação)
+  useLayoutEffect(() => {
+    onEdgesUpdate?.(edges);
+  }, [edges, onEdgesUpdate]);
 
   // Helper para criar aresta com o tipo correto
   const makeEdge = useCallback((params: Connection | Edge, extra?: Partial<Edge>): Edge => ({

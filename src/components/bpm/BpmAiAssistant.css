@@ -26,10 +26,6 @@
   white-space: nowrap;
 }
 
-.bpm-ai-fab i {
-  font-size: 16px;
-}
-
 .bpm-ai-fab:hover {
   background: var(--primary-dark);
   transform: translateY(-3px);
@@ -90,8 +86,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 19px;
-  color: #fff;
   flex-shrink: 0;
 }
 
@@ -124,9 +118,7 @@
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: var(--radius-md);
-  color: #fff;
   cursor: pointer;
-  font-size: 15px;
   transition: all var(--transition-fast);
   flex-shrink: 0;
 }
@@ -153,13 +145,8 @@
   gap: 8px;
 }
 
-.bpm-ai-message--user {
-  align-items: flex-end;
-}
-
-.bpm-ai-message--assistant {
-  align-items: flex-start;
-}
+.bpm-ai-message--user      { align-items: flex-end; }
+.bpm-ai-message--assistant { align-items: flex-start; }
 
 /* ── Balão de texto ── */
 .bpm-ai-message-bubble {
@@ -200,18 +187,19 @@
   animation: aiTypingBounce 1.3s ease-in-out infinite;
 }
 
-.bpm-ai-typing span:nth-child(2) { animation-delay: 0.18s; }
-.bpm-ai-typing span:nth-child(3) { animation-delay: 0.36s; }
+.bpm-ai-typing span:nth-child(1) { animation-delay: 0ms; }
+.bpm-ai-typing span:nth-child(2) { animation-delay: 150ms; }
+.bpm-ai-typing span:nth-child(3) { animation-delay: 300ms; }
 
 @keyframes aiTypingBounce {
-  0%, 65%, 100% { transform: translateY(0);  opacity: 0.35; }
-  30%           { transform: translateY(-7px); opacity: 1;    }
+  0%, 65%, 100% { transform: translateY(0);   opacity: 0.35; }
+  30%           { transform: translateY(-7px); opacity: 1; }
 }
 
 /* ── Footer com input ── */
 .bpm-ai-footer {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
   padding: 12px 16px 14px;
   border-top: 1px solid var(--border-light);
@@ -221,19 +209,16 @@
 
 .bpm-ai-input {
   flex: 1;
-  resize: none;
   border: 1.5px solid var(--border-medium);
   border-radius: var(--radius-lg);
   padding: 10px 14px;
   font-size: var(--font-size-sm);
   font-family: var(--font-sans);
-  line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-white);
-  max-height: 120px;
-  overflow-y: auto;
   transition: border-color var(--transition-fast);
   outline: none;
+  height: 40px;
 }
 
 .bpm-ai-input:focus {
@@ -259,8 +244,6 @@
   background: var(--primary-pure);
   border: none;
   border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 15px;
   cursor: pointer;
   transition: all var(--transition-fast);
   flex-shrink: 0;
@@ -276,7 +259,31 @@
   cursor: not-allowed;
 }
 
-/* ── Card de preview do fluxo gerado ── */
+/* Botão "Criar outro" no footer quando conversa está encerrada */
+.bpm-ai-restart-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.bpm-ai-restart-btn:hover {
+  border-color: var(--primary-pure);
+  color: var(--primary-pure);
+  background: var(--primary-light);
+}
+
+/* ── Card de preview — base ── */
 .bpm-ai-flow-card {
   background: var(--bg-white);
   border: 1.5px solid var(--primary-medium);
@@ -290,17 +297,50 @@
   animation: fadeIn 350ms ease both;
 }
 
+/* Variante sucesso — fundo azul claríssimo */
+.bpm-ai-flow-card--success {
+  background: #f0f6ff;
+  border-color: var(--primary-pure);
+}
+
+/* ── Header de sucesso ── */
+.bpm-ai-flow-success-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.bpm-ai-flow-success-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bpm-ai-flow-success-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #15803d;
+  line-height: 1.3;
+}
+
+.bpm-ai-flow-success-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: 1px;
+}
+
+/* ── Header meta do processo ── */
 .bpm-ai-flow-card-header {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-}
-
-.bpm-ai-flow-card-header > i {
-  font-size: 18px;
-  color: var(--primary-pure);
-  margin-top: 2px;
-  flex-shrink: 0;
 }
 
 .bpm-ai-flow-card-meta {
@@ -319,39 +359,46 @@
 .bpm-ai-flow-area {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
+  line-height: 1.4;
 }
 
-/* Lista de nós resumida */
+/* ── Lista de nós ── */
 .bpm-ai-flow-nodes {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   padding: 10px 12px;
-  background: var(--bg-surface);
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
 }
 
 .bpm-ai-flow-node {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 9px;
 }
 
-.bpm-ai-flow-node-emoji {
-  font-size: 15px;
+.bpm-ai-flow-node-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  line-height: 1.4;
 }
 
 .bpm-ai-flow-node-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
-  min-width: 0;
 }
 
 .bpm-ai-flow-node-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -360,35 +407,54 @@
 }
 
 .bpm-ai-flow-node-resp {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   color: var(--text-tertiary);
 }
 
-.bpm-ai-flow-node-more {
-  font-size: var(--font-size-xs);
+.bpm-ai-flow-node-prazo {
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-tertiary);
-  font-style: italic;
-  padding-left: 24px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: var(--bg-surface-2);
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
 }
 
-/* Automações */
+/* ── Automações ── */
 .bpm-ai-flow-automations {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 10px;
-  background: var(--warning-light);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--warning);
+  color: #92400e;
 }
 
-.bpm-ai-flow-automations i {
-  font-size: 12px;
+.bpm-ai-flow-automations > span:first-child {
+  margin-top: 1px;
+  flex-shrink: 0;
 }
 
-/* Botões de ação */
+.bpm-ai-flow-auto-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bpm-ai-flow-auto-item {
+  line-height: 1.4;
+}
+
+.bpm-ai-flow-auto-item strong {
+  font-weight: 700;
+}
+
+/* ── Botões de ação ── */
 .bpm-ai-flow-actions {
   display: flex;
   gap: 8px;
@@ -397,4 +463,5 @@
 .bpm-ai-flow-actions .btn {
   flex: 1;
   justify-content: center;
+  gap: 6px;
 }

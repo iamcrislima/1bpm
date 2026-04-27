@@ -8,6 +8,8 @@ import VisaoGeralPage from './pages/VisaoGeralPage'
 import ProcessosPage from './pages/ProcessosPage'
 import ProcessoDetailPage from './pages/ProcessoDetailPage'
 import FormulariosPage from './pages/FormulariosPage'
+import NovaAutomacaoPage from './pages/NovaAutomacaoPage'
+import AutomacaoErrorBoundary from './components/layout/AutomacaoErrorBoundary'
 import BpmEditor from './components/bpm/editor/BpmEditor'
 import BpmAiAssistant from './components/bpm/BpmAiAssistant'
 import { processos } from './data/mockData'
@@ -59,6 +61,9 @@ function AppLayout() {
     if (location.pathname === '/processos/novo') {
       return [root, procInteligentes, { label: 'Processos', to: '/processos/fluxos' }, { label: 'Novo Processo' }]
     }
+    if (location.pathname.startsWith('/processos/automacoes')) {
+      return [root, procInteligentes, { label: 'Automações', to: '/processos?tab=automacoes' }, { label: 'Nova Automação' }]
+    }
     const matchDetalhe = location.pathname.match(/^\/processos\/([^/]+)$/)
     if (matchDetalhe) {
       const id = matchDetalhe[1]
@@ -108,6 +113,7 @@ function AppLayout() {
             <Route path="/processos" element={<VisaoGeralPage />} />
             <Route path="/processos/fluxos" element={<ProcessosPage />} />
             <Route path="/processos/novo" element={<BpmEditor />} />
+            <Route path="/processos/automacoes/nova" element={<AutomacaoErrorBoundary><NovaAutomacaoPage /></AutomacaoErrorBoundary>} />
             <Route path="/processos/:id" element={<ProcessoDetailPage />} />
             <Route path="/formularios" element={<FormulariosPage />} />
             <Route path="/atividades" element={<PlaceholderPage title="Atividades" />} />

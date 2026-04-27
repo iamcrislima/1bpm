@@ -1,6 +1,19 @@
 import { useState, lazy, Suspense } from 'react';
 import type { FormFieldData } from '../formBuilder/fieldTypes';
 
+// FontAwesome muta <i> para <svg> via MutationObserver. React 19 quebra ao tentar
+// remover elementos que não existem mais no DOM. dangerouslySetInnerHTML isola a
+// mutação do FontAwesome do reconciliador do React.
+function Ico({ icon, className, style }: { icon: string; className?: string; style?: React.CSSProperties }) {
+  return (
+    <span
+      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
+      className={className}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0, ...style }}
+    />
+  );
+}
+
 // Importação lazy para isolar erros de inicialização do FormBuilder
 const FormBuilderPage = lazy(() => import('../formBuilder/FormBuilderPage'));
 
@@ -249,7 +262,7 @@ function Section({
     <div className="cfg-section">
       <button className="cfg-section-header" onClick={() => setOpen(o => !o)}>
         <span className="cfg-section-title">{title}</span>
-        <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'} cfg-section-chevron`} />
+        <Ico icon={`fa-solid fa-chevron-${open ? 'up' : 'down'}`} className="cfg-section-chevron" />
       </button>
       {open && <div className="cfg-section-body">{children}</div>}
     </div>
@@ -557,7 +570,7 @@ function ExecCard({
       {/* Cabeçalho do card */}
       <div className="cfg-exec-card-header" onClick={() => setExpanded(x => !x)}>
         <div className="cfg-exec-card-icon" style={{ background: def.cor + '18', color: def.cor }}>
-          <i className={def.icon} />
+          <Ico icon={def.icon} />
         </div>
         <div className="cfg-exec-card-info">
           <span className="cfg-exec-card-label">{def.label}</span>
@@ -574,10 +587,10 @@ function ExecCard({
             title="Remover"
             onClick={onRemove}
           >
-            <i className="fa-regular fa-xmark" />
+            <Ico icon="fa-regular fa-xmark" />
           </button>
         </div>
-        <i className={`fa-regular fa-chevron-${expanded ? 'up' : 'down'} cfg-exec-chevron`} />
+        <Ico icon={`fa-regular fa-chevron-${expanded ? 'up' : 'down'}`} className="cfg-exec-chevron" />
       </div>
 
       {/* Painel expansível de mapeamento */}
@@ -591,7 +604,7 @@ function ExecCard({
               className={`cfg-exec-tab ${abaAtiva === 'entradas' ? 'active' : ''}`}
               onClick={() => setAbaAtiva('entradas')}
             >
-              <i className="fa-regular fa-arrow-right-to-bracket" />
+              <Ico icon="fa-regular fa-arrow-right-to-bracket" />
               Parâmetros de entrada
               {def.entradas.length > 0 && (
                 <span className="cfg-exec-tab-count">{def.entradas.length}</span>
@@ -601,7 +614,7 @@ function ExecCard({
               className={`cfg-exec-tab ${abaAtiva === 'saidas' ? 'active' : ''}`}
               onClick={() => setAbaAtiva('saidas')}
             >
-              <i className="fa-regular fa-arrow-right-from-bracket" />
+              <Ico icon="fa-regular fa-arrow-right-from-bracket" />
               Variáveis de retorno
               {def.saidas.length > 0 && (
                 <span className="cfg-exec-tab-count">{def.saidas.length}</span>
@@ -623,7 +636,7 @@ function ExecCard({
                     </span>
                     <span className="cfg-exec-param-key">{p.key}</span>
                   </div>
-                  <i className="fa-regular fa-arrow-left cfg-exec-map-arrow" />
+                  <Ico icon="fa-regular fa-arrow-left" className="cfg-exec-map-arrow" />
                   <select
                     className="cfg-select cfg-exec-map-select"
                     value={vinculo.entradaMap[p.key] || ''}
@@ -650,7 +663,7 @@ function ExecCard({
                     <span className="cfg-exec-param-label">{p.label}</span>
                     <span className="cfg-exec-param-key">{p.key}</span>
                   </div>
-                  <i className="fa-regular fa-arrow-right cfg-exec-map-arrow" />
+                  <Ico icon="fa-regular fa-arrow-right" className="cfg-exec-map-arrow" />
                   <select
                     className="cfg-select cfg-exec-map-select"
                     value={vinculo.saidaMap[p.key] || ''}
@@ -738,9 +751,7 @@ function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => v
                       className="cfg-dropdown-item cfg-exec-dropdown-item"
                       onMouseDown={() => addExec(def)}
                     >
-                      <span className="cfg-exec-di-icon" style={{ color: def.cor }}>
-                        <i className={def.icon} />
-                      </span>
+                      <Ico icon={def.icon} className="cfg-exec-di-icon" style={{ color: def.cor }} />
                       <span className="cfg-exec-di-label">{def.label}</span>
                     </button>
                   ))}
@@ -898,7 +909,7 @@ function TabFormulario({
               className={`cfg-exec-tab ${abaVar === 'entradas' ? 'active' : ''}`}
               onClick={() => setAbaVar('entradas')}
             >
-              <i className="fa-regular fa-arrow-right-to-bracket" />
+              <Ico icon="fa-regular fa-arrow-right-to-bracket" />
               Processo → Formulário
               {formEntradas.length > 0 && (
                 <span className="cfg-exec-tab-count">{formEntradas.length}</span>
@@ -908,7 +919,7 @@ function TabFormulario({
               className={`cfg-exec-tab ${abaVar === 'saidas' ? 'active' : ''}`}
               onClick={() => setAbaVar('saidas')}
             >
-              <i className="fa-regular fa-arrow-right-from-bracket" />
+              <Ico icon="fa-regular fa-arrow-right-from-bracket" />
               Formulário → Processo
               {formSaidas.length > 0 && (
                 <span className="cfg-exec-tab-count">{formSaidas.length}</span>
@@ -935,7 +946,7 @@ function TabFormulario({
                       <option key={v.key} value={v.key}>{v.label}</option>
                     ))}
                   </select>
-                  <i className="fa-regular fa-arrow-right cfg-form-map-arrow" />
+                  <Ico icon="fa-regular fa-arrow-right" className="cfg-form-map-arrow" />
                   <select
                     className="cfg-select"
                     value={row.campoForm}
@@ -947,12 +958,12 @@ function TabFormulario({
                     ))}
                   </select>
                   <button className="cfg-icon-btn red" onClick={() => removeEntrada(i)} title="Remover">
-                    <i className="fa-regular fa-xmark" />
+                    <Ico icon="fa-regular fa-xmark" />
                   </button>
                 </div>
               ))}
               <button className="cfg-add-row-btn" onClick={addEntrada}>
-                <i className="fa-regular fa-plus" />
+                <Ico icon="fa-regular fa-plus" />
                 Adicionar mapeamento
               </button>
             </div>
@@ -962,7 +973,7 @@ function TabFormulario({
           {abaVar === 'saidas' && (
             <div className="cfg-form-map-list">
               <p className="cfg-form-map-hint">
-                <i className="fa-regular fa-circle-info" />
+                <Ico icon="fa-regular fa-circle-info" />
                 Capture respostas do formulário e salve em variáveis do processo.
               </p>
               {formSaidas.map((row, i) => (
@@ -977,7 +988,7 @@ function TabFormulario({
                       <option key={c.key} value={c.key}>{c.label}</option>
                     ))}
                   </select>
-                  <i className="fa-regular fa-arrow-right cfg-form-map-arrow" />
+                  <Ico icon="fa-regular fa-arrow-right" className="cfg-form-map-arrow" />
                   <select
                     className="cfg-select"
                     value={row.varProcesso}
@@ -989,12 +1000,12 @@ function TabFormulario({
                     ))}
                   </select>
                   <button className="cfg-icon-btn red" onClick={() => removeSaida(i)} title="Remover">
-                    <i className="fa-regular fa-xmark" />
+                    <Ico icon="fa-regular fa-xmark" />
                   </button>
                 </div>
               ))}
               <button className="cfg-add-row-btn" onClick={addSaida}>
-                <i className="fa-regular fa-plus" />
+                <Ico icon="fa-regular fa-plus" />
                 Adicionar mapeamento
               </button>
             </div>
