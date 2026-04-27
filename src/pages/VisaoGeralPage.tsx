@@ -65,11 +65,15 @@ const volumePorArea = (() => {
 
 // ── Paleta de cores por área ────────────────────────────────
 const AREA_COLORS: Record<string, string> = {
-  'Atendimento ao Cidadão': 'var(--warning)',
-  'Meio Ambiente':          'var(--success)',
-  'Administrativo':         'var(--primary-pure)',
-  'Jurídico':               'var(--danger)',
-  'Recursos Humanos':       'var(--info)',
+  'Atendimento ao Cidadão':    'var(--warning)',
+  'Meio Ambiente':             'var(--success)',
+  'Administrativo':            'var(--primary-pure)',
+  'Jurídico':                  'var(--danger)',
+  'Recursos Humanos':          'var(--info)',
+  'Saúde':                     '#0891B2',
+  'Educação':                  '#2563EB',
+  'Obras e Infraestrutura':    '#D97706',
+  'Assistência Social':        '#059669',
 }
 
 export default function VisaoGeralPage() {

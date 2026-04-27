@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import NovoProcessoModal from '../components/bpm/NovoProcessoModal'
 import { processos } from '../data/mockData'
 import './ProcessosPage.css'
@@ -28,20 +28,33 @@ const ICONE_MAP: Record<string, string> = {
   megaphone: '📢',
   store: '🏪',
   gavel: '⚖️',
+  'file-signature': '📝',
+  'balance-scale': '⚖️',
+  coins: '🪙',
+  stethoscope: '🩺',
+  'shield-virus': '🛡️',
+  school: '🏫',
+  'graduation-cap': '🎓',
+  'hard-hat': '⛑️',
+  building: '🏢',
+  'hand-holding-heart': '🤲',
+  'house-chimney': '🏠',
 }
 
 // ── Card de Processo ─────────────────────────────────────────
 
 function ProcessoCard({ proc, style }: { proc: typeof processos[0]; style?: React.CSSProperties }) {
+  const navigate = useNavigate()
   const editorUrl = proc.templateKey
     ? `/processos/novo?template=${proc.templateKey}`
     : `/processos/novo?nome=${encodeURIComponent(proc.nome)}`
 
   return (
     <Link
-      to={editorUrl}
+      to={`/processos/${proc.id}`}
       className="processo-card card card-hover animate-fade-in"
       style={style}
+      aria-label={`Abrir detalhes de ${proc.nome}`}
     >
       <div className="processo-card-header">
         <div className="processo-icone" style={{ background: proc.cor + '18', color: proc.cor }}>
@@ -85,7 +98,7 @@ function ProcessoCard({ proc, style }: { proc: typeof processos[0]; style?: Reac
             <span className="badge badge-danger">⚠️ {proc.atrasados} atrasado{proc.atrasados > 1 ? 's' : ''}</span>
           )}
           {proc.otimizaveis > 0 && (
-            <span className="badge badge-warning">🧠 {proc.otimizaveis} otimizável{proc.otimizaveis > 1 ? 'is' : ''}</span>
+            <span className="badge badge-warning">🧠 {proc.otimizaveis} {proc.otimizaveis > 1 ? 'otimizáveis' : 'otimizável'}</span>
           )}
         </div>
       )}
@@ -95,10 +108,19 @@ function ProcessoCard({ proc, style }: { proc: typeof processos[0]; style?: Reac
         <span className="processo-data">
           {new Date(proc.ultimaAtualizacao).toLocaleDateString('pt-BR')}
         </span>
-        <span className="processo-editar-btn">
+        <button
+          type="button"
+          className="processo-editar-btn"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            navigate(editorUrl)
+          }}
+          aria-label={`Editar fluxo de ${proc.nome}`}
+        >
           <i className="fa-regular fa-pen-to-square" />
           Editar fluxo
-        </span>
+        </button>
       </div>
     </Link>
   )
