@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { AUTOMATION_MOCKS } from '../data/automationMocks';
 import './NovaAutomacaoPage.css';
 
 function Ico({ icon, style }: { icon: string; style?: React.CSSProperties }) {
@@ -18,7 +19,7 @@ interface TriggerItem {
   label: string;
   icon: string;
   hasConfig?: boolean;
-  configType?: 'days' | 'sla-days' | 'recurrence';
+  configType?: 'days' | 'sla-days' | 'recurrence' | 'stage-name';
   beta?: boolean;
 }
 
@@ -43,7 +44,7 @@ interface ActionItem {
   label: string;
   icon: string;
   beta?: boolean;
-  configType: 'email' | 'stage' | 'simple' | 'ai' | 'webhook';
+  configType: 'email' | 'stage' | 'simple' | 'ai' | 'webhook' | 'message';
 }
 
 interface ActionCategory {
@@ -62,7 +63,7 @@ const TRIGGER_CATEGORIES: TriggerCategory[] = [
     icon: 'fa-regular fa-diagram-project',
     items: [
       { id: 'process-created',       label: 'Um processo for criado',                         icon: 'fa-regular fa-circle-plus' },
-      { id: 'process-entered-stage', label: 'Um processo entrar em uma etapa',                 icon: 'fa-regular fa-arrow-right-to-bracket' },
+      { id: 'process-entered-stage', label: 'Um processo entrar em uma etapa',                 icon: 'fa-regular fa-arrow-right-to-bracket', hasConfig: true, configType: 'stage-name' },
       { id: 'stage-stalled',         label: 'Uma etapa ficar parada por mais de X dias',       icon: 'fa-regular fa-hourglass-half', hasConfig: true, configType: 'days' },
       { id: 'approval-granted',      label: 'Uma aprovação for concedida',                     icon: 'fa-regular fa-circle-check' },
       { id: 'approval-rejected',     label: 'Uma aprovação for rejeitada',                     icon: 'fa-regular fa-circle-xmark' },
@@ -104,11 +105,29 @@ const TRIGGER_CATEGORIES: TriggerCategory[] = [
 ];
 
 const CONDITIONS: ConditionItem[] = [
-  { id: 'process-type', label: 'O tipo do processo for igual a',   icon: 'fa-regular fa-diagram-project', inputType: 'select',  placeholder: 'Selecione o tipo', options: ['Licenciamento Ambiental', 'Aprovação de Compras', 'Atendimento ao Cidadão', 'Gestão de Contratos', 'Admissão de Servidores'] },
-  { id: 'area',         label: 'A área responsável for',           icon: 'fa-regular fa-building',        inputType: 'select',  placeholder: 'Selecione a área',  options: ['Atendimento', 'Meio Ambiente', 'Administrativo', 'Jurídico', 'RH', 'Financeiro', 'TI'] },
-  { id: 'field-value',  label: 'O valor do campo for maior que',   icon: 'fa-regular fa-hashtag',         inputType: 'number',  placeholder: 'Ex: 5000' },
-  { id: 'tag',          label: 'O processo tiver a tag',           icon: 'fa-regular fa-tag',             inputType: 'select',  placeholder: 'Selecione a tag',   options: ['Urgente', 'Prioritário', 'Pendente de Documentação', 'Aguardando Terceiros'] },
-  { id: 'responsible',  label: 'O responsável for',                icon: 'fa-regular fa-user',            inputType: 'text',    placeholder: 'Nome do responsável' },
+  {
+    id: 'process-type',
+    label: 'O tipo do processo for igual a',
+    icon: 'fa-regular fa-diagram-project',
+    inputType: 'select',
+    placeholder: 'Selecione o tipo',
+    options: [
+      'Licenciamento Ambiental',
+      'Ouvidoria',
+      'Aprovação de Compras',
+      'Atendimento ao Cidadão',
+      'Gestão de Contratos',
+      'Gestão de Contratos de Terceirização',
+      'Admissão de Servidores',
+      'Concessão de Benefício Eventual',
+      'Cobrança da Dívida Ativa',
+      'Regulação de Consultas e Exames Especializados',
+    ],
+  },
+  { id: 'area',        label: 'A área responsável for',        icon: 'fa-regular fa-building', inputType: 'select', placeholder: 'Selecione a área', options: ['Atendimento', 'Meio Ambiente', 'Administrativo', 'Jurídico', 'RH', 'Financeiro', 'TI'] },
+  { id: 'field-value', label: 'O valor do campo for maior que', icon: 'fa-regular fa-hashtag',  inputType: 'number', placeholder: 'Ex: 5000' },
+  { id: 'tag',         label: 'O processo tiver a tag',         icon: 'fa-regular fa-tag',      inputType: 'select', placeholder: 'Selecione a tag', options: ['Urgente', 'Prioritário', 'Pendente de Documentação', 'Aguardando Terceiros'] },
+  { id: 'responsible', label: 'O responsável for',              icon: 'fa-regular fa-user',     inputType: 'text',   placeholder: 'Nome do responsável' },
 ];
 
 const ACTION_CATEGORIES: ActionCategory[] = [
@@ -117,11 +136,11 @@ const ACTION_CATEGORIES: ActionCategory[] = [
     label: 'Comunicação',
     icon: 'fa-regular fa-bell',
     items: [
-      { id: 'notify-citizen-email', label: 'Notificar o cidadão por e-mail',                 icon: 'fa-regular fa-envelope',    configType: 'email' },
-      { id: 'notify-citizen-sms',   label: 'Notificar o cidadão por SMS',                    icon: 'fa-regular fa-message-sms', configType: 'simple' },
-      { id: 'alert-responsible',    label: 'Enviar alerta interno para o responsável',        icon: 'fa-regular fa-bell',        configType: 'simple' },
-      { id: 'notify-manager',       label: 'Notificar o gestor da área',                     icon: 'fa-regular fa-user-tie',    configType: 'simple' },
-      { id: 'send-email-template',  label: 'Enviar e-mail com template configurável',         icon: 'fa-regular fa-file-lines',  configType: 'email' },
+      { id: 'notify-citizen-email', label: 'Notificar o cidadão por e-mail',                 icon: 'fa-regular fa-envelope',    configType: 'email'   },
+      { id: 'notify-citizen-sms',   label: 'Notificar o cidadão por SMS',                    icon: 'fa-regular fa-message-sms', configType: 'message' },
+      { id: 'alert-responsible',    label: 'Enviar alerta interno para o responsável',        icon: 'fa-regular fa-bell',        configType: 'simple'  },
+      { id: 'notify-manager',       label: 'Notificar o gestor da área',                     icon: 'fa-regular fa-user-tie',    configType: 'message' },
+      { id: 'send-email-template',  label: 'Enviar e-mail com template configurável',         icon: 'fa-regular fa-file-lines',  configType: 'email'   },
     ],
   },
   {
@@ -129,12 +148,12 @@ const ACTION_CATEGORIES: ActionCategory[] = [
     label: 'Processo',
     icon: 'fa-regular fa-diagram-project',
     items: [
-      { id: 'move-stage',         label: 'Mover para a próxima etapa automaticamente', icon: 'fa-regular fa-arrow-right',      configType: 'stage' },
-      { id: 'assign-responsible', label: 'Atribuir responsável por regra',              icon: 'fa-regular fa-user-plus',        configType: 'simple' },
-      { id: 'create-subprocess',  label: 'Criar um sub-processo vinculado',             icon: 'fa-regular fa-diagram-subtask',  configType: 'simple' },
-      { id: 'escalate',           label: 'Escalar para o nível superior',               icon: 'fa-regular fa-arrow-up',         configType: 'simple' },
-      { id: 'archive',            label: 'Arquivar ou encerrar o processo',             icon: 'fa-regular fa-box-archive',      configType: 'simple' },
-      { id: 'generate-protocol',  label: 'Gerar protocolo automático',                  icon: 'fa-regular fa-barcode',          configType: 'simple' },
+      { id: 'move-stage',         label: 'Mover para a próxima etapa automaticamente', icon: 'fa-regular fa-arrow-right',      configType: 'stage'   },
+      { id: 'assign-responsible', label: 'Atribuir responsável por regra',              icon: 'fa-regular fa-user-plus',        configType: 'simple'  },
+      { id: 'create-subprocess',  label: 'Criar um sub-processo vinculado',             icon: 'fa-regular fa-diagram-subtask',  configType: 'simple'  },
+      { id: 'escalate',           label: 'Escalar para o nível superior',               icon: 'fa-regular fa-arrow-up',         configType: 'message' },
+      { id: 'archive',            label: 'Arquivar ou encerrar o processo',             icon: 'fa-regular fa-box-archive',      configType: 'simple'  },
+      { id: 'generate-protocol',  label: 'Gerar protocolo automático',                  icon: 'fa-regular fa-barcode',          configType: 'simple'  },
     ],
   },
   {
@@ -142,11 +161,11 @@ const ACTION_CATEGORIES: ActionCategory[] = [
     label: 'Integrações Gov',
     icon: 'fa-regular fa-landmark',
     items: [
-      { id: 'publish-diario', label: 'Publicar no Diário Oficial',                     icon: 'fa-regular fa-newspaper',  beta: true,  configType: 'simple' },
-      { id: 'sign-digital',   label: 'Acionar assinatura digital',                     icon: 'fa-regular fa-signature',              configType: 'simple' },
+      { id: 'publish-diario', label: 'Publicar no Diário Oficial',                     icon: 'fa-regular fa-newspaper',  beta: true,  configType: 'simple'  },
+      { id: 'sign-digital',   label: 'Acionar assinatura digital',                     icon: 'fa-regular fa-signature',              configType: 'simple'  },
       { id: 'webhook',        label: 'Enviar para sistema externo via webhook',         icon: 'fa-regular fa-webhook',    beta: true,  configType: 'webhook' },
-      { id: 'tributos',       label: 'Registrar em sistema de tributos',                icon: 'fa-regular fa-receipt',    beta: true,  configType: 'simple' },
-      { id: 'consult-cpf',    label: 'Consultar CPF ou CNPJ em base de dados',         icon: 'fa-regular fa-id-card',                configType: 'simple' },
+      { id: 'tributos',       label: 'Registrar em sistema de tributos',                icon: 'fa-regular fa-receipt',    beta: true,  configType: 'simple'  },
+      { id: 'consult-cpf',    label: 'Consultar CPF ou CNPJ em base de dados',         icon: 'fa-regular fa-id-card',                configType: 'simple'  },
     ],
   },
   {
@@ -162,25 +181,44 @@ const ACTION_CATEGORIES: ActionCategory[] = [
   },
 ];
 
-const EMAIL_VARIABLES = ['{nome_cidadao}', '{numero_protocolo}', '{nome_processo}', '{prazo}'];
+const EMAIL_VARIABLES = [
+  '{nome_cidadao}', '{numero_protocolo}', '{nome_processo}', '{prazo}',
+  '{data_vencimento}', '{nome_etapa}', '{data_conclusao}', '{resultado}',
+  '{data_limite}', '{fornecedor}',
+];
 
 // ── Component ─────────────────────────────────────────────────
 
 export default function NovaAutomacaoPage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const automation = id ? AUTOMATION_MOCKS.find(a => a.id === id) : null;
+  const isEditing = Boolean(automation);
 
-  const [name,            setName]            = useState('Nova automação');
-  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null);
-  const [stalledDays,     setStalledDays]     = useState(3);
-  const [slaDays,         setSlaDays]         = useState(2);
+  // Derive pré-valores dos objetos ricos quando editando
+  const initCondValue = (() => {
+    if (!automation?.condition) return '';
+    const cfg = automation.condition.config;
+    const vals = cfg.values as string[] | undefined;
+    return vals?.[0] ?? (cfg.value as string | undefined) ?? '';
+  })();
+
+  const [name,            setName]            = useState(automation?.name ?? 'Nova automação');
+  const [selectedTrigger, setSelectedTrigger] = useState<string | null>(automation?.trigger.type ?? null);
+  const [stalledDays,     setStalledDays]     = useState((automation?.trigger.config.days as number) ?? 3);
+  const [slaDays,         setSlaDays]         = useState((automation?.trigger.config.days_before as number) ?? 2);
+  const [triggerStage,    setTriggerStage]    = useState((automation?.trigger.config.stage_name as string) ?? '');
   const [recurrenceType,  setRecurrenceType]  = useState('diaria');
-  const [selectedCond,    setSelectedCond]    = useState<string | null>(null);
-  const [condSkipped,     setCondSkipped]     = useState(false);
-  const [condValue,       setCondValue]       = useState('');
-  const [selectedAction,  setSelectedAction]  = useState<string | null>(null);
-  const [configOpen,      setConfigOpen]      = useState(false);
-  const [emailSubject,    setEmailSubject]    = useState('');
-  const [emailBody,       setEmailBody]       = useState('');
+  const [selectedCond,    setSelectedCond]    = useState<string | null>(automation?.condition?.type ?? null);
+  const [condSkipped,     setCondSkipped]     = useState(automation?.condition === null && Boolean(automation));
+  const [condValue,       setCondValue]       = useState(initCondValue);
+  const [selectedAction,  setSelectedAction]  = useState<string | null>(automation?.action.type ?? null);
+  const [configOpen,      setConfigOpen]      = useState(Boolean(automation));
+  const [emailSubject,    setEmailSubject]    = useState((automation?.action.config.subject as string) ?? '');
+  const [emailBody,       setEmailBody]       = useState(
+    (automation?.action.config.template as string) ??
+    (automation?.action.config.message  as string) ?? ''
+  );
   const [targetStage,     setTargetStage]     = useState('');
   const [webhookUrl,      setWebhookUrl]      = useState('');
 
@@ -189,9 +227,12 @@ export default function NovaAutomacaoPage() {
 
   const handleTriggerClick = (id: string) => {
     try {
+      const isChanging = selectedTrigger !== id;
       setSelectedTrigger(prev => (prev === id ? null : id));
-      setSelectedAction(null);
-      setConfigOpen(false);
+      if (isChanging) {
+        setSelectedAction(null);
+        setConfigOpen(false);
+      }
     } catch (e) {
       console.error('[NovaAutomacao] handleTriggerClick', e);
     }
@@ -250,11 +291,11 @@ export default function NovaAutomacaoPage() {
             Automações
           </span>
           <Ico icon="fa-regular fa-chevron-right" style={{ fontSize: 10, color: 'var(--text-tertiary)' }} />
-          <span style={{ color: 'var(--text-secondary)' }}>Nova Automação</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{isEditing ? 'Editar Automação' : 'Nova Automação'}</span>
         </div>
-        <h1 className="na-title">Nova Automação</h1>
+        <h1 className="na-title">{isEditing ? 'Editar Automação' : 'Nova Automação'}</h1>
         <p className="na-subtitle">
-          Defina quando e o que acontece automaticamente nos seus processos.
+          {isEditing ? 'Revise o gatilho, as condições e a ação desta automação.' : 'Defina quando e o que acontece automaticamente nos seus processos.'}
         </p>
       </div>
 
@@ -334,6 +375,8 @@ export default function NovaAutomacaoPage() {
                                 <option value={1}>1 dia</option>
                                 <option value={2}>2 dias</option>
                                 <option value={5}>5 dias</option>
+                                <option value={30}>30 dias</option>
+                                <option value={60}>60 dias</option>
                               </select>
                             </div>
                           )}
@@ -349,6 +392,18 @@ export default function NovaAutomacaoPage() {
                                 <option value="semanal">Semanal</option>
                                 <option value="mensal">Mensal</option>
                               </select>
+                            </div>
+                          )}
+                          {item.configType === 'stage-name' && (
+                            <div className="na-config-row">
+                              <label>Nome da etapa:</label>
+                              <input
+                                type="text"
+                                className="na-config-input"
+                                placeholder="Ex: Vistoria técnica"
+                                value={triggerStage}
+                                onChange={e => setTriggerStage(e.target.value)}
+                              />
                             </div>
                           )}
                         </div>
@@ -548,6 +603,31 @@ export default function NovaAutomacaoPage() {
                                   </>
                                 )}
 
+                                {item.configType === 'message' && (
+                                  <div className="na-config-field">
+                                    <label className="na-config-label">Mensagem</label>
+                                    <textarea
+                                      className="na-config-textarea"
+                                      placeholder="Digite a mensagem a ser enviada..."
+                                      rows={4}
+                                      value={emailBody}
+                                      onChange={e => setEmailBody(e.target.value)}
+                                    />
+                                    <div className="na-variables-hint">
+                                      <span className="na-variables-label">Inserir variável:</span>
+                                      {EMAIL_VARIABLES.map(v => (
+                                        <button
+                                          key={v}
+                                          className="na-variable-chip"
+                                          onClick={() => setEmailBody(prev => prev + v)}
+                                        >
+                                          {v}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
                                 {item.configType === 'stage' && (
                                   <div className="na-config-field">
                                     <label className="na-config-label">Etapa de destino</label>
@@ -642,7 +722,7 @@ export default function NovaAutomacaoPage() {
           onClick={handleSave}
         >
           <Ico icon="fa-regular fa-floppy-disk" />
-          Salvar automação
+          {isEditing ? 'Salvar alterações' : 'Salvar automação'}
         </button>
       </div>
     </div>
