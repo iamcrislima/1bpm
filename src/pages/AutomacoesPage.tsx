@@ -1,29 +1,43 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AUTOMATION_MOCKS, type Automation } from '../data/automationMocks';
+import { Ico } from '../components/ui/Ico';
 import './AutomacoesPage.css';
 
-function Ico({ icon, style }: { icon: string; style?: React.CSSProperties }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0, ...style }}
-    />
-  );
+interface ConfirmState {
+  id: string;
+  action: 'toggle' | 'delete';
+  message: string;
 }
 
 export default function AutomacoesPage() {
   const navigate = useNavigate();
   const [automacoes, setAutomacoes] = useState<Automation[]>(AUTOMATION_MOCKS);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
 
-  const toggleActive = (id: string) => {
-    setAutomacoes(prev =>
-      prev.map(a => (a.id === id ? { ...a, active: !a.active } : a))
-    );
+  const requestToggle = (id: string) => {
+    const automacao = automacoes.find(a => a.id === id);
+    if (!automacao) return;
+    const action = automacao.active ? 'desativar' : 'ativar';
+    setConfirmState({ id, action: 'toggle', message: `Deseja ${action} a automação "${automacao.name}"?` });
   };
 
-  const handleDelete = (id: string) => {
-    setAutomacoes(prev => prev.filter(a => a.id !== id));
+  const requestDelete = (id: string) => {
+    const automacao = automacoes.find(a => a.id === id);
+    if (!automacao) return;
+    setConfirmState({ id, action: 'delete', message: `Deseja excluir a automação "${automacao.name}"? Esta ação remove a regra da lista.` });
+  };
+
+  const handleConfirm = () => {
+    if (!confirmState) return;
+    if (confirmState.action === 'toggle') {
+      setAutomacoes(prev =>
+        prev.map(a => (a.id === confirmState.id ? { ...a, active: !a.active } : a))
+      );
+    } else {
+      setAutomacoes(prev => prev.filter(a => a.id !== confirmState.id));
+    }
+    setConfirmState(null);
   };
 
   return (
@@ -44,6 +58,29 @@ export default function AutomacoesPage() {
           Nova Automação
         </button>
       </div>
+
+      {/* Inline confirmation dialog */}
+      {confirmState && (
+        <div className="auto-confirm-overlay" onClick={() => setConfirmState(null)}>
+          <div className="auto-confirm-dialog" onClick={e => e.stopPropagation()}>
+            <div className="auto-confirm-icon">
+              <Ico icon={confirmState.action === 'delete' ? 'fa-regular fa-trash' : 'fa-regular fa-bolt'} />
+            </div>
+            <p className="auto-confirm-message">{confirmState.message}</p>
+            <div className="auto-confirm-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmState(null)}>
+                Cancelar
+              </button>
+              <button
+                className={`btn ${confirmState.action === 'delete' ? 'btn-danger' : 'btn-primary'}`}
+                onClick={handleConfirm}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Empty state */}
       {automacoes.length === 0 && (
@@ -70,7 +107,20 @@ export default function AutomacoesPage() {
       {automacoes.length > 0 && (
         <div className="auto-list">
           {automacoes.map(auto => (
-            <div key={auto.id} className="auto-card">
+            <div
+              key={auto.id}
+              className="auto-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/processos/automacoes/${auto.id}`)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  navigate(`/processos/automacoes/${auto.id}`);
+                }
+              }}
+              aria-label={`Editar automação ${auto.name}`}
+            >
               {/* Icon */}
               <div className={`auto-card-icon ${auto.active ? 'auto-card-icon--active' : ''}`}>
                 <Ico icon="fa-regular fa-bolt" />
@@ -102,26 +152,33 @@ export default function AutomacoesPage() {
               <div className="auto-card-actions">
                 <button
                   className={`auto-toggle ${auto.active ? 'auto-toggle--on' : ''}`}
-                  onClick={() => toggleActive(auto.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    requestToggle(auto.id);
+                  }}
                   title={auto.active ? 'Desativar automação' : 'Ativar automação'}
                 >
                   <span className="auto-toggle-knob" />
                 </button>
-                <span
-                  className={`badge ${auto.active ? 'badge-success' : 'badge-neutral'}`}
-                >
+                <span className={`badge ${auto.active ? 'badge-success' : 'badge-neutral'}`}>
                   {auto.active ? 'Ativa' : 'Inativa'}
                 </span>
                 <button
                   className="btn btn-ghost btn-sm"
-                  onClick={() => navigate('/processos/automacoes/nova')}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    navigate(`/processos/automacoes/${auto.id}`);
+                  }}
                   title="Editar"
                 >
                   <Ico icon="fa-regular fa-pen-to-square" />
                 </button>
                 <button
                   className="btn btn-ghost btn-sm auto-btn-delete"
-                  onClick={() => handleDelete(auto.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    requestDelete(auto.id);
+                  }}
                   title="Excluir"
                 >
                   <Ico icon="fa-regular fa-trash" />

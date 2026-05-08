@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* ── 1Doc Color Tokens ── */
@@ -63,7 +63,7 @@
   --radius-full: 9999px;
 
   /* ── Typography ── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -97,6 +97,37 @@
   --bpm-amber-border: #FDE68A;
   --bpm-amber-deep: #92400E;
   --bpm-amber-medium: #B45309;
+
+  /* ── BPM Node Color Tokens ── */
+  --bpm-node-start: #22c55e;
+  --bpm-node-start-light: #dcfce7;
+  --bpm-node-end: #ef4444;
+  --bpm-node-end-light: #fee2e2;
+  --bpm-node-intermediate: #f59e0b;
+  --bpm-node-intermediate-light: #fef3c7;
+  --bpm-node-task: #0058db;
+  --bpm-node-task-light: #dce6f5;
+  --bpm-node-task-system: #6366f1;
+  --bpm-node-task-system-light: #ede9fe;
+  --bpm-node-task-service: #0891b2;
+  --bpm-node-task-service-light: #cffafe;
+  --bpm-node-task-script: #7c3aed;
+  --bpm-node-task-script-light: #ede9fe;
+  --bpm-node-task-email: #ea580c;
+  --bpm-node-task-email-light: #ffedd5;
+  --bpm-node-gateway-xor: #9333ea;
+  --bpm-node-gateway-xor-light: #f3e8ff;
+  --bpm-node-gateway-par: #0ea5e9;
+  --bpm-node-gateway-par-light: #e0f2fe;
+  --bpm-node-gateway-inc: #10b981;
+  --bpm-node-gateway-inc-light: #d1fae5;
+  --bpm-node-msg: #2563eb;
+  --bpm-node-msg-light: #dbeafe;
+  --bpm-node-notification: #d97706;
+  --bpm-node-notification-light: #fef3c7;
+  --bpm-node-chatbot: #7c3aed;
+  --bpm-node-chatbot-light: #ede9fe;
+  --bpm-edge-color: #0058db;
 }
 
 /* ── Reset & Base ── */
@@ -341,4 +372,3 @@ a:hover { text-decoration: underline; }
   z-index: 100;
 }
 .tooltip-wrapper:hover .tooltip { opacity: 1; }
-

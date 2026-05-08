@@ -3,6 +3,7 @@ import type { ReactNode, ErrorInfo } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
+import type { NodeData, AiFlowNode, AiFlowEdge, BpmEditorRouteState } from '../../../types/bpmTypes';
 
 // ── Error Boundary para capturar crashes de render ────────────
 interface EBState { hasError: boolean; message: string }
@@ -18,11 +19,11 @@ class EditorErrorBoundary extends Component<{ children: ReactNode }, EBState> {
     if (this.state.hasError) {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: 40 }}>
-          <i className="fa-regular fa-triangle-exclamation" style={{ fontSize: 40, color: '#ef4444' }} />
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>Erro ao renderizar o painel</div>
-          <div style={{ fontSize: 13, color: '#7d7d7d', maxWidth: 400, textAlign: 'center' }}>{this.state.message}</div>
+          <i className="fa-regular fa-triangle-exclamation" style={{ fontSize: 40, color: 'var(--danger)' }} />
+          <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>Erro ao renderizar o painel</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 400, textAlign: 'center' }}>{this.state.message}</div>
           <button
-            style={{ padding: '8px 20px', borderRadius: 8, background: '#0058db', color: 'white', border: 'none', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+            className="btn btn-primary"
             onClick={() => this.setState({ hasError: false, message: '' })}
           >
             Tentar novamente
@@ -37,53 +38,54 @@ import BpmSidebar from './BpmSidebar';
 import BpmCanvas from './BpmCanvas';
 import BpmProperties from './BpmProperties';
 import { processTemplates } from '../../../data/flowMocks';
+import { processos } from '../../../data/mockData';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import './BpmEditor.css';
 
 // ── Conversão de nós gerados pela IA para formato React Flow ──
 
 const AI_TYPE_MAP: Record<string, { rfType: string; icon: string; color: string; bg: string }> = {
-  start:             { rfType: 'start',             icon: 'fa-regular fa-play',                         color: '#22c55e', bg: '#dcfce7' },
-  end:               { rfType: 'end',               icon: 'fa-regular fa-stop',                         color: '#ef4444', bg: '#fee2e2' },
-  human_task:        { rfType: 'task',              icon: 'fa-regular fa-user',                          color: '#0058db', bg: '#dce6f5' },
-  system_task:       { rfType: 'task-system',       icon: 'fa-regular fa-gear',                          color: '#6366f1', bg: '#ede9fe' },
-  gateway_exclusive: { rfType: 'gateway',           icon: 'fa-regular fa-code-branch',                   color: '#9333ea', bg: '#f3e8ff' },
-  gateway_parallel:  { rfType: 'gateway-paralelo',  icon: 'fa-regular fa-arrows-split-up-and-left',      color: '#0ea5e9', bg: '#e0f2fe' },
-  message:           { rfType: 'msg',               icon: 'fa-regular fa-message',                       color: '#2563eb', bg: '#dbeafe' },
-  notification:      { rfType: 'notification',      icon: 'fa-regular fa-bell',                          color: '#d97706', bg: '#fef3c7' },
-  chatbot:           { rfType: 'chatbot',           icon: 'fa-regular fa-robot',                         color: '#7c3aed', bg: '#ede9fe' },
+  start:             { rfType: 'start',             icon: 'fa-regular fa-play',                    color: 'var(--bpm-node-start)',         bg: 'var(--bpm-node-start-light)' },
+  end:               { rfType: 'end',               icon: 'fa-regular fa-stop',                    color: 'var(--bpm-node-end)',           bg: 'var(--bpm-node-end-light)' },
+  human_task:        { rfType: 'task',              icon: 'fa-regular fa-user',                    color: 'var(--bpm-node-task)',          bg: 'var(--bpm-node-task-light)' },
+  system_task:       { rfType: 'task-system',       icon: 'fa-regular fa-gear',                    color: 'var(--bpm-node-task-system)',   bg: 'var(--bpm-node-task-system-light)' },
+  gateway_exclusive: { rfType: 'gateway',           icon: 'fa-regular fa-code-branch',             color: 'var(--bpm-node-gateway-xor)',  bg: 'var(--bpm-node-gateway-xor-light)' },
+  gateway_parallel:  { rfType: 'gateway-paralelo',  icon: 'fa-regular fa-arrows-split-up-and-left',color: 'var(--bpm-node-gateway-par)',  bg: 'var(--bpm-node-gateway-par-light)' },
+  message:           { rfType: 'msg',               icon: 'fa-regular fa-message',                 color: 'var(--bpm-node-msg)',           bg: 'var(--bpm-node-msg-light)' },
+  notification:      { rfType: 'notification',      icon: 'fa-regular fa-bell',                    color: 'var(--bpm-node-notification)',  bg: 'var(--bpm-node-notification-light)' },
+  chatbot:           { rfType: 'chatbot',           icon: 'fa-regular fa-robot',                   color: 'var(--bpm-node-chatbot)',       bg: 'var(--bpm-node-chatbot-light)' },
 };
 
-function convertAiNodes(flowNodes: any[]): Node[] {
-  return (flowNodes || []).map((n: any) => {
+function convertAiNodes(flowNodes: AiFlowNode[]): Node<NodeData>[] {
+  return flowNodes.map((n) => {
     const meta = AI_TYPE_MAP[n.type] ?? AI_TYPE_MAP['human_task'];
     return {
       id: n.id,
       type: meta.rfType,
       position: n.position ?? { x: 0, y: 0 },
       data: {
-        label:      n.label       ?? 'Etapa',
-        icon:       meta.icon,
-        color:      meta.color,
-        bg:         meta.bg,
+        label:       n.label       ?? 'Etapa',
+        icon:        meta.icon,
+        color:       meta.color,
+        bg:          meta.bg,
         responsavel: n.responsible ?? '',
-        prazo:      parseInt(n.deadline) || 3,
-        descricao:  n.description ?? '',
+        prazo:       parseInt(n.deadline) || 3,
+        descricao:   n.description ?? '',
       },
     };
   });
 }
 
-function convertAiEdges(flowEdges: any[]): Edge[] {
-  return (flowEdges || []).map((e: any) => ({
+function convertAiEdges(flowEdges: AiFlowEdge[]): Edge[] {
+  return flowEdges.map((e) => ({
     id:        e.id,
     source:    e.source,
     target:    e.target,
     label:     e.label ?? '',
     animated:  false,
     type:      'labeled',
-    markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
-    style:     { stroke: '#0058db', strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--bpm-edge-color)', width: 16, height: 16 },
+    style:     { stroke: 'var(--bpm-edge-color)', strokeWidth: 2 },
   }));
 }
 
@@ -94,16 +96,18 @@ export default function BpmEditor() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const stateFlow    = (location.state as any)?.flow            ?? null;
-  const aiFlow       = (location.state as any)?.aiGeneratedFlow ?? null;
+  const routeState   = location.state as BpmEditorRouteState | null;
+  const stateFlow    = routeState?.flow            ?? null;
+  const aiFlow       = routeState?.aiGeneratedFlow ?? null;
   const activeAiFlow = aiFlow ?? stateFlow;   // aiGeneratedFlow tem prioridade
 
   const templateId = searchParams.get('template');
   const template   = templateId ? processTemplates[templateId] : null;
+  const editingProcess = templateId ? processos.find(p => p.templateKey === templateId) : null;
 
-  const [nodes, setNodes] = useState<Node[]>(() => {
+  const [nodes, setNodes] = useState<Node<NodeData>[]>(() => {
     if (activeAiFlow) return convertAiNodes(activeAiFlow.nodes);
-    if (template)     return template.nodes;
+    if (template)     return template.nodes as Node<NodeData>[];
     return [];
   });
 
@@ -115,8 +119,8 @@ export default function BpmEditor() {
 
   const [showAiBanner, setShowAiBanner] = useState(!!aiFlow);
 
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [nodeUpdate, setNodeUpdate] = useState<{ id: string; data: any; ts: number } | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null);
+  const [nodeUpdate, setNodeUpdate] = useState<{ id: string; data: NodeData; ts: number } | null>(null);
 
   // ── Simulação de fluxo com tokens animados ───────────────────
   const [simulando, setSimulando]         = useState(false);
@@ -234,14 +238,16 @@ export default function BpmEditor() {
 
   const nomeParam   = searchParams.get('nome');
   const editorTitle = activeAiFlow?.name ?? template?.title ?? nomeParam ?? 'Novo Processo';
+  const editorStatus = editingProcess?.status === 'publicado' ? 'Publicado' : 'Rascunho';
+  const editorStatusClass = editingProcess?.status === 'publicado' ? 'badge-success' : 'badge-warning';
 
-  const updateNodeData = useCallback((id: string, data: any) => {
+  const updateNodeData = useCallback((id: string, data: NodeData) => {
     setNodes(prev => prev.map(n => (n.id === id ? { ...n, data } : n)));
     setSelectedNode(prev => (prev?.id === id ? { ...prev, data } : prev));
     setNodeUpdate({ id, data, ts: Date.now() });
   }, []);
 
-  const changeNodeType = useCallback((id: string, newType: string, newData: any) => {
+  const changeNodeType = useCallback((id: string, newType: string, newData: Partial<NodeData>) => {
     setNodes(prev =>
       prev.map(n => (n.id === id ? { ...n, type: newType, data: { ...n.data, ...newData } } : n))
     );
@@ -250,7 +256,7 @@ export default function BpmEditor() {
     );
   }, []);
 
-  const handleNodesUpdate = useCallback((updated: Node[]) => {
+  const handleNodesUpdate = useCallback((updated: Node<NodeData>[]) => {
     setNodes(updated);
   }, []);
 
@@ -273,9 +279,9 @@ export default function BpmEditor() {
           </button>
           <div style={{ width: 1, height: 20, background: 'var(--border-light)', margin: '0 4px' }} />
           <h2>{editorTitle}</h2>
-          <span className="badge badge-warning">
+          <span className={`badge ${editorStatusClass}`}>
             <i className="fa-regular fa-circle" style={{ fontSize: 7 }} />
-            Rascunho
+            {editorStatus}
           </span>
           {(aiFlow || stateFlow) && (
             <span className="badge badge-primary" style={{ marginLeft: 4 }}>
@@ -288,7 +294,6 @@ export default function BpmEditor() {
           <button
             className={`btn ${simulando ? 'btn-danger' : 'btn-secondary'}`}
             onClick={iniciarSimulacao}
-            style={simulando ? { background: '#fee2e2', color: '#c0182d', borderColor: '#fca5a5' } : {}}
           >
             <i className={`fa-regular fa-${simulando ? 'stop' : 'play'}`} />
             {simulando ? 'Parar' : 'Simular'}
@@ -333,6 +338,8 @@ export default function BpmEditor() {
               nodeUpdate={nodeUpdate}
               simAtivos={simAtivos}
               simConcluidos={simConcluidos}
+              simTokenEdges={simTokenEdges}
+              simTokenKey={simTokenKey}
             />
           </ReactFlowProvider>
         </EditorErrorBoundary>

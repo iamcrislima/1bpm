@@ -45,11 +45,32 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
 
   const defaultBreadcrumb = breadcrumb ?? [{ label: "Central de Ações" }];
 
+  // Badge: soma de todos os badges dos filhos em todos os grupos
+  const totalBadge = SETORES.reduce(
+    (acc, g) => acc + g.children.reduce((a, c) => a + (c.badge ?? 0), 0),
+    0
+  );
+
+  // Filtro de busca
+  const setoresFiltrados = SETORES.map(g => ({
+    ...g,
+    children: g.children.filter(
+      c =>
+        c.nome.toLowerCase().includes(searchSetor.toLowerCase()) ||
+        c.sigla.toLowerCase().includes(searchSetor.toLowerCase())
+    ),
+  })).filter(
+    g =>
+      g.nome.toLowerCase().includes(searchSetor.toLowerCase()) ||
+      g.sigla.toLowerCase().includes(searchSetor.toLowerCase()) ||
+      g.children.length > 0
+  );
+
   return (
     <div className="onb-subheader">
       <div className="onb-subheader__left">
         {defaultBreadcrumb.map((item, i) => (
-          <span key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span key={item.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             {item.to ? (
               <span
                 className="onb-subheader__breadcrumb-link"
@@ -74,7 +95,7 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
           onClick={() => setShowSetorDropdown((v) => !v)}
         >
           Trocar de setor
-          <span className="onb-subheader__btn-badge">51</span>
+          {totalBadge > 0 && <span className="onb-subheader__btn-badge">{totalBadge}</span>}
           <i className="fa-solid fa-chevron-down" style={{ fontSize: 10 }} />
         </button>
 
@@ -82,7 +103,7 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
           <div className="onb-subheader__setor-dropdown">
             {/* Search */}
             <div className="onb-subheader__setor-search">
-              <i className="fa-solid fa-magnifying-glass" style={{ color: "#999", fontSize: 13 }} />
+              <i className="fa-solid fa-magnifying-glass" style={{ color: "var(--text-tertiary)", fontSize: 13 }} />
               <input
                 type="text"
                 placeholder="Digite o nome do setor"
@@ -94,8 +115,8 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
 
             {/* Setor list */}
             <div className="onb-subheader__setor-list">
-              {SETORES.map((grupo, gi) => (
-                <div key={gi}>
+              {setoresFiltrados.map((grupo) => (
+                <div key={grupo.sigla}>
                   <div
                     className="onb-subheader__setor-grupo"
                     onClick={() => {
@@ -107,9 +128,9 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
                   >
                     <strong>{grupo.sigla} - {grupo.nome}</strong>
                   </div>
-                  {grupo.children.map((child, ci) => (
+                  {grupo.children.map((child) => (
                     <div
-                      key={ci}
+                      key={child.sigla}
                       className="onb-subheader__setor-item"
                       onClick={() => {
                         setSelectedSetor(`${child.sigla} - ${child.nome}`);
@@ -118,7 +139,7 @@ export default function Subheader({ breadcrumb }: SubheaderProps) {
                     >
                       <span className="onb-subheader__setor-line" />
                       {child.sigla} - {child.nome}
-                      {child.badge && (
+                      {child.badge != null && (
                         <span className="onb-subheader__setor-badge">{child.badge}</span>
                       )}
                     </div>

@@ -8,23 +8,32 @@ interface SidebarProps {
 }
 
 const topNavItems = [
-  { to: '/', icon: '📋', label: 'Inbox', badge: 12 },
-  { to: '/atividades', icon: '⚡', label: 'Atividades' },
-  { to: '/documentos', icon: '📄', label: 'Documentos' },
-  { to: '/assinaturas', icon: '✍️', label: 'Assinaturas' },
-  { to: '/comunicacao', icon: '💬', label: 'Comunicação' },
+  { to: '/', icon: 'fa-regular fa-inbox', label: 'Inbox', badge: 12 },
+  { to: '/atividades', icon: 'fa-regular fa-bolt', label: 'Atividades' },
+  { to: '/documentos', icon: 'fa-regular fa-file-lines', label: 'Documentos' },
+  { to: '/assinaturas', icon: 'fa-regular fa-signature', label: 'Assinaturas' },
+  { to: '/comunicacao', icon: 'fa-regular fa-comment-dots', label: 'Comunicação' },
 ];
 
 const processosInteligentesSub = [
-  { to: '/processos', icon: '🔀', label: 'Fluxos' },
-  { to: '/formularios', icon: '📝', label: 'Formulários' },
+  { to: '/processos', icon: 'fa-regular fa-diagram-project', label: 'Fluxos' },
+  { to: '/formularios', icon: 'fa-regular fa-clipboard-list', label: 'Formulários' },
 ];
 
 const bottomNavItems = [
-  { to: '/integracoes', icon: '🔗', label: 'Integrações' },
-  { to: '/relatorios', icon: '📊', label: 'Relatórios' },
-  { to: '/configuracoes', icon: '⚙️', label: 'Configurações' },
+  { to: '/integracoes', icon: 'fa-regular fa-link', label: 'Integrações' },
+  { to: '/relatorios', icon: 'fa-regular fa-chart-bar', label: 'Relatórios' },
+  { to: '/configuracoes', icon: 'fa-regular fa-gear', label: 'Configurações' },
 ];
+
+function NavIcon({ icon }: { icon: string }) {
+  return (
+    <span
+      className="nav-icon"
+      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
+    />
+  );
+}
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
@@ -43,7 +52,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         className={`nav-item ${isActive ? 'active' : ''}`}
         title={collapsed ? item.label : undefined}
       >
-        <span className="nav-icon">{item.icon}</span>
+        <NavIcon icon={item.icon} />
         {!collapsed && (
           <>
             <span className="nav-label">{item.label}</span>
@@ -84,11 +93,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             onClick={() => !collapsed && setProcessosAberto(o => !o)}
             title={collapsed ? 'Processos Inteligentes' : undefined}
           >
-            <span className="nav-icon">🚀</span>
+            <NavIcon icon="fa-regular fa-rocket" />
             {!collapsed && (
               <>
                 <span className="nav-label">Proc. Inteligentes</span>
-                <span className={`nav-chevron ${processosAberto ? 'open' : ''}`}>›</span>
+                <span className={`nav-chevron ${processosAberto ? 'open' : ''}`}>
+                  <i className="fa-regular fa-chevron-right" style={{ fontSize: 10 }} />
+                </span>
               </>
             )}
             {isProcessosAtivo && <span className="nav-active-bar" />}
@@ -105,7 +116,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     to={item.to}
                     className={`nav-item nav-sub-item ${isActive ? 'active' : ''}`}
                   >
-                    <span className="nav-icon">{item.icon}</span>
+                    <NavIcon icon={item.icon} />
                     <span className="nav-label">{item.label}</span>
                     {isActive && <span className="nav-active-bar" />}
                   </NavLink>
@@ -125,7 +136,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     className={`nav-item ${isActive ? 'active' : ''}`}
                     title={item.label}
                   >
-                    <span className="nav-icon">{item.icon}</span>
+                    <NavIcon icon={item.icon} />
                     {isActive && <span className="nav-active-bar" />}
                   </NavLink>
                 );
@@ -140,11 +151,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Footer */}
       <div className="sidebar-footer">
         <NavLink to="#" className="nav-item">
-          <span className="nav-icon">❓</span>
+          <NavIcon icon="fa-regular fa-circle-question" />
           {!collapsed && <span className="nav-label">Ajuda</span>}
         </NavLink>
         <button className="nav-item collapse-btn" onClick={onToggle}>
-          <span className="nav-icon">{collapsed ? '→' : '←'}</span>
+          <NavIcon icon={collapsed ? 'fa-regular fa-chevron-right' : 'fa-regular fa-chevron-left'} />
           {!collapsed && <span className="nav-label">Recolher menu</span>}
         </button>
       </div>

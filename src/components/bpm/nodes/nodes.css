@@ -84,6 +84,34 @@
   flex: 1;
 }
 
+/* ── Node header / icon / label modifiers por tipo ── */
+.bpm-node-header--task        { background: color-mix(in srgb, var(--bpm-node-task) 9%, transparent);        border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-task) 15%, transparent); }
+.bpm-node-header--system      { background: color-mix(in srgb, var(--bpm-node-task-system) 9%, transparent);  border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-task-system) 15%, transparent); }
+.bpm-node-header--service     { background: color-mix(in srgb, var(--bpm-node-task-service) 9%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-task-service) 15%, transparent); }
+.bpm-node-header--script      { background: color-mix(in srgb, var(--bpm-node-task-script) 9%, transparent);  border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-task-script) 15%, transparent); }
+.bpm-node-header--email       { background: color-mix(in srgb, var(--bpm-node-task-email) 9%, transparent);   border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-task-email) 15%, transparent); }
+.bpm-node-header--msg         { background: color-mix(in srgb, var(--bpm-node-msg) 9%, transparent);          border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-msg) 15%, transparent); }
+.bpm-node-header--notification{ background: color-mix(in srgb, var(--bpm-node-notification) 9%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-notification) 15%, transparent); }
+.bpm-node-header--chatbot     { background: color-mix(in srgb, var(--bpm-node-chatbot) 9%, transparent);      border-bottom: 1px solid color-mix(in srgb, var(--bpm-node-chatbot) 15%, transparent); }
+
+.bpm-node-icon--task         { background: var(--bpm-node-task-light);         color: var(--bpm-node-task); }
+.bpm-node-icon--system       { background: var(--bpm-node-task-system-light);   color: var(--bpm-node-task-system); }
+.bpm-node-icon--service      { background: var(--bpm-node-task-service-light);  color: var(--bpm-node-task-service); }
+.bpm-node-icon--script       { background: var(--bpm-node-task-script-light);   color: var(--bpm-node-task-script); }
+.bpm-node-icon--email        { background: var(--bpm-node-task-email-light);    color: var(--bpm-node-task-email); }
+.bpm-node-icon--msg          { background: var(--bpm-node-msg-light);           color: var(--bpm-node-msg); }
+.bpm-node-icon--notification { background: var(--bpm-node-notification-light);  color: var(--bpm-node-notification); }
+.bpm-node-icon--chatbot      { background: var(--bpm-node-chatbot-light);       color: var(--bpm-node-chatbot); }
+
+.bpm-node-type-label--task         { color: var(--bpm-node-task); }
+.bpm-node-type-label--system       { color: var(--bpm-node-task-system); }
+.bpm-node-type-label--service      { color: var(--bpm-node-task-service); }
+.bpm-node-type-label--script       { color: var(--bpm-node-task-script); }
+.bpm-node-type-label--email        { color: var(--bpm-node-task-email); }
+.bpm-node-type-label--msg          { color: var(--bpm-node-msg); }
+.bpm-node-type-label--notification { color: var(--bpm-node-notification); }
+.bpm-node-type-label--chatbot      { color: var(--bpm-node-chatbot); }
+
 .bpm-node-badge {
   font-size: 10px;
   font-weight: 600;

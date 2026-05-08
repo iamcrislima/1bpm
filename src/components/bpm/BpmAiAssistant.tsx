@@ -1,16 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Ico } from '../ui/Ico'
 import './BpmAiAssistant.css'
-
-// ── Icon helper (evita conflito React/FontAwesome SVG) ────────
-function Ico({ icon, style }: { icon: string; style?: React.CSSProperties }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0, ...style }}
-    />
-  )
-}
 
 // ── Tipos ─────────────────────────────────────────────────────
 type TemplateKey = 'compras' | 'ambiental' | 'admissao' | 'ouvidoria' | 'alvara'
@@ -234,14 +225,14 @@ function detectTemplate(text: string): { key: TemplateKey; response: string } {
 
 // ── Ícones por tipo de nó ─────────────────────────────────────
 const NODE_META: Record<string, { icon: string; color: string; label: string }> = {
-  start:             { icon: 'fa-regular fa-circle-play',             color: '#22c55e', label: 'Início' },
-  end:               { icon: 'fa-regular fa-circle-stop',             color: '#ef4444', label: 'Fim' },
-  human_task:        { icon: 'fa-regular fa-user',                    color: '#0058db', label: 'Humana' },
-  system_task:       { icon: 'fa-regular fa-gear',                    color: '#6366f1', label: 'Sistema' },
-  gateway_exclusive: { icon: 'fa-regular fa-code-branch',             color: '#9333ea', label: 'Decisão' },
-  gateway_parallel:  { icon: 'fa-regular fa-arrows-split-up-and-left',color: '#0ea5e9', label: 'Paralelo' },
-  message:           { icon: 'fa-regular fa-message',                 color: '#2563eb', label: 'Mensagem' },
-  notification:      { icon: 'fa-regular fa-bell',                    color: '#d97706', label: 'Notificação' },
+  start:             { icon: 'fa-regular fa-circle-play',             color: 'var(--bpm-node-start)',        label: 'Início' },
+  end:               { icon: 'fa-regular fa-circle-stop',             color: 'var(--bpm-node-end)',          label: 'Fim' },
+  human_task:        { icon: 'fa-regular fa-user',                    color: 'var(--bpm-node-task)',         label: 'Humana' },
+  system_task:       { icon: 'fa-regular fa-gear',                    color: 'var(--bpm-node-task-system)',  label: 'Sistema' },
+  gateway_exclusive: { icon: 'fa-regular fa-code-branch',             color: 'var(--bpm-node-gateway-xor)', label: 'Decisão' },
+  gateway_parallel:  { icon: 'fa-regular fa-arrows-split-up-and-left',color: 'var(--bpm-node-gateway-par)', label: 'Paralelo' },
+  message:           { icon: 'fa-regular fa-message',                 color: 'var(--bpm-node-msg)',          label: 'Mensagem' },
+  notification:      { icon: 'fa-regular fa-bell',                    color: 'var(--bpm-node-notification)', label: 'Notificação' },
 }
 
 // ── Card de preview do fluxo gerado ──────────────────────────
@@ -262,7 +253,7 @@ function FlowPreviewCard({
       {/* Cabeçalho de sucesso */}
       <div className="bpm-ai-flow-success-header">
         <div className="bpm-ai-flow-success-icon">
-          <Ico icon="fa-solid fa-circle-check" style={{ fontSize: 22, color: '#16a34a' }} />
+          <Ico icon="fa-solid fa-circle-check" style={{ fontSize: 22, color: 'var(--success)' }} />
         </div>
         <div>
           <div className="bpm-ai-flow-success-title">Fluxo criado com sucesso!</div>
@@ -288,7 +279,7 @@ function FlowPreviewCard({
             <div key={node.id} className="bpm-ai-flow-node">
               <span
                 className="bpm-ai-flow-node-icon"
-                style={{ background: meta.color + '18', color: meta.color }}
+                style={{ background: `color-mix(in srgb, ${meta.color} 12%, transparent)`, color: meta.color }}
               >
                 <Ico icon={meta.icon} style={{ fontSize: 11 }} />
               </span>
@@ -312,7 +303,7 @@ function FlowPreviewCard({
           <Ico icon="fa-regular fa-bolt" style={{ fontSize: 11 }} />
           <div className="bpm-ai-flow-auto-list">
             {flow.automations.map((a, i) => (
-              <span key={i} className="bpm-ai-flow-auto-item">
+              <span key={`${a.trigger}-${i}`} className="bpm-ai-flow-auto-item">
                 <strong>{a.trigger}</strong> → {a.action}
               </span>
             ))}
@@ -349,6 +340,7 @@ function TypingIndicator() {
 // ── Componente principal ──────────────────────────────────────
 export default function BpmAiAssistant() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [isOpen,    setIsOpen]    = useState(false)
   const [messages,  setMessages]  = useState<ChatMessage[]>([
@@ -361,6 +353,18 @@ export default function BpmAiAssistant() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef       = useRef<HTMLInputElement>(null)
+  const timerIdsRef    = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  // Limpa todos os timers pendentes ao desmontar
+  useEffect(() => {
+    return () => { timerIdsRef.current.forEach(clearTimeout) }
+  }, [])
+
+  const safeTimeout = (fn: () => void, ms: number) => {
+    const id = setTimeout(fn, ms)
+    timerIdsRef.current.push(id)
+    return id
+  }
 
   // Scroll automático
   useEffect(() => {
@@ -404,7 +408,7 @@ export default function BpmAiAssistant() {
     } else if (stage === 1) {
       // Estágio 1 → aguardar 1200ms, perguntar sobre aprovação
       setIsLoading(true)
-      setTimeout(() => {
+      safeTimeout(() => {
         addAssistantMsg('Anotado! Esse processo vai precisar de aprovação de algum gestor ou secretário antes de seguir em frente, ou ele pode avançar automaticamente entre as etapas?')
         setIsLoading(false)
         setStage(2)
@@ -413,7 +417,7 @@ export default function BpmAiAssistant() {
     } else if (stage === 2) {
       // Estágio 2 → aguardar 1000ms, perguntar sobre notificações
       setIsLoading(true)
-      setTimeout(() => {
+      safeTimeout(() => {
         addAssistantMsg('Entendido! Mais uma coisa: o cidadão ou solicitante precisa ser notificado automaticamente quando o processo for concluído ou quando mudar de etapa?')
         setIsLoading(false)
         setStage(3)
@@ -422,9 +426,9 @@ export default function BpmAiAssistant() {
     } else if (stage === 3) {
       // Estágio 3 → gerar fluxo em dois momentos
       setIsLoading(true)
-      setTimeout(() => {
+      safeTimeout(() => {
         addAssistantMsg('Perfeito, já tenho tudo que preciso! Deixa eu montar o fluxo para você...')
-        setTimeout(() => {
+        safeTimeout(() => {
           const flow = FLOW_TEMPLATES[template]
           addAssistantMsg(
             `Criei o fluxo **${flow.name}** com ${flow.nodes.length} etapas e ${flow.automations.length} automações configuradas. Clique em "Abrir no editor" para revisar e salvar.`,
@@ -459,6 +463,11 @@ export default function BpmAiAssistant() {
   }
 
   const isDone = stage === 4
+  const assistantContext = location.pathname.startsWith('/formularios')
+    ? { title: 'Assistente de Formulários', subtitle: 'Descreva os campos e eu estruturo para você', cta: 'Criar com IA' }
+    : location.pathname.includes('automacoes') || location.search.includes('tab=automacoes')
+      ? { title: 'Assistente de Automações', subtitle: 'Descreva a regra e eu monto a automação', cta: 'Criar com IA' }
+      : { title: 'Assistente de Fluxos', subtitle: 'Descreva o processo e eu crio para você', cta: 'Criar com IA' }
 
   // ── Render ──────────────────────────────────────────────────
   return (
@@ -471,7 +480,7 @@ export default function BpmAiAssistant() {
         aria-label="Abrir assistente de IA"
       >
         <Ico icon="fa-regular fa-sparkles" style={{ fontSize: 16 }} />
-        Criar com IA
+        {assistantContext.cta}
       </button>
 
       {/* Backdrop */}
@@ -484,10 +493,11 @@ export default function BpmAiAssistant() {
       )}
 
       {/* Painel lateral */}
+      {isOpen && (
       <div
-        className={`bpm-ai-panel${isOpen ? ' bpm-ai-panel--open' : ''}`}
+        className="bpm-ai-panel bpm-ai-panel--open"
         role="complementary"
-        aria-label="Assistente de criação de fluxos"
+        aria-label="Assistente de criação com IA"
       >
         {/* Cabeçalho */}
         <div className="bpm-ai-panel-header">
@@ -495,8 +505,8 @@ export default function BpmAiAssistant() {
             <Ico icon="fa-regular fa-sparkles" style={{ fontSize: 19, color: '#fff' }} />
           </div>
           <div className="bpm-ai-panel-header-text">
-            <h3 className="bpm-ai-panel-title">Assistente de Fluxos</h3>
-            <p className="bpm-ai-panel-subtitle">Descreva o processo e eu crio para você</p>
+            <h3 className="bpm-ai-panel-title">{assistantContext.title}</h3>
+            <p className="bpm-ai-panel-subtitle">{assistantContext.subtitle}</p>
           </div>
           <button
             className="bpm-ai-panel-close"
@@ -560,6 +570,7 @@ export default function BpmAiAssistant() {
           )}
         </div>
       </div>
+      )}
     </>
   )
 }

@@ -48,6 +48,10 @@ const PALETTE = [
 ];
 
 export default function BpmSidebar() {
+  const addToCanvas = (item: { type: string; label: string; icon: string; color: string; bg: string }) => {
+    window.dispatchEvent(new CustomEvent('bpm:add-node', { detail: item }));
+  };
+
   const onDragStart = (event: React.DragEvent, item: { type: string; label: string; icon: string; color: string; bg: string }) => {
     event.dataTransfer.setData('application/reactflow', item.type);
     event.dataTransfer.setData('application/reactflow-label', item.label);
@@ -77,6 +81,8 @@ export default function BpmSidebar() {
                 className="dndnode"
                 draggable
                 onDragStart={e => onDragStart(e, item)}
+                onClick={() => addToCanvas(item)}
+                title={`${item.label} — clique para adicionar ou arraste para o canvas`}
               >
                 <div className="dndnode-icon-wrap" style={{ background: item.bg, color: item.color }}>
                   <i className={item.icon} />

@@ -115,7 +115,7 @@ export default function CentralDeAcoes() {
         {COUNTERS.map((c) => (
           <div key={c.id} className="cda__counter-card">
             <span className="cda__counter-title">
-              {c.title} <i className="fa-regular fa-circle-info" style={{ fontSize: 11, color: "#bbb" }} />
+              {c.title} <i className="fa-regular fa-circle-info" style={{ fontSize: 11, color: "var(--text-tertiary)" }} />
             </span>
             <div className="cda__counter-body">
               <div className={`cda__counter-icon cda__counter-icon--${c.iconColor}`}>
@@ -130,11 +130,11 @@ export default function CentralDeAcoes() {
         <div className="cda__comunicados">
           <div className="cda__comunicados-header">
             Comunicados
-            <i className="fa-regular fa-circle-info" style={{ fontSize: 12, color: "#bbb" }} />
+            <i className="fa-regular fa-circle-info" style={{ fontSize: 12, color: "var(--text-tertiary)" }} />
           </div>
           <div className="cda__comunicados-items">
-            {CIRCULARES.map((c, i) => (
-              <div key={i} className="cda__circular">
+            {CIRCULARES.map((c) => (
+              <div key={c.title} className="cda__circular">
                 <div className="cda__circular-title">{c.title}</div>
                 {c.subtitle && <div className="cda__circular-subtitle">{c.subtitle}</div>}
                 {c.desc && <div className="cda__circular-text">{c.desc}</div>}
@@ -149,11 +149,11 @@ export default function CentralDeAcoes() {
           <div key={col.id} className="cda__col">
             <div className="cda__col-subtitle">
               {col.subtitle}{" "}
-              <i className="fa-regular fa-circle-info" style={{ fontSize: 11, color: "#bbb" }} />
+              <i className="fa-regular fa-circle-info" style={{ fontSize: 11, color: "var(--text-tertiary)" }} />
             </div>
             <div className="cda__col-items">
-              {col.items.map((item, i) => (
-                <div key={i} className="cda__item">
+              {col.items.map((item) => (
+                <div key={`${col.id}-${item.title}`} className="cda__item">
                   <div className="cda__item-title">{item.title}</div>
                   <div className="cda__item-desc">{item.desc}</div>
                   <div className="cda__item-date">{item.date}</div>

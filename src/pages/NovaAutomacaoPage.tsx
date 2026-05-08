@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AUTOMATION_MOCKS } from '../data/automationMocks';
+import { Ico } from '../components/ui/Ico';
 import './NovaAutomacaoPage.css';
-
-function Ico({ icon, style }: { icon: string; style?: React.CSSProperties }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0, ...style }}
-    />
-  );
-}
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -215,7 +207,7 @@ export default function NovaAutomacaoPage() {
   const [selectedAction,  setSelectedAction]  = useState<string | null>(automation?.action.type ?? null);
   const [configOpen,      setConfigOpen]      = useState(Boolean(automation));
   const [emailSubject,    setEmailSubject]    = useState((automation?.action.config.subject as string) ?? '');
-  const [emailBody,       setEmailBody]       = useState(
+  const [messageBody,     setMessageBody]     = useState(
     (automation?.action.config.template as string) ??
     (automation?.action.config.message  as string) ?? ''
   );
@@ -226,48 +218,32 @@ export default function NovaAutomacaoPage() {
   const panelsUnlocked = selectedTrigger !== null;
 
   const handleTriggerClick = (id: string) => {
-    try {
-      const isChanging = selectedTrigger !== id;
-      setSelectedTrigger(prev => (prev === id ? null : id));
-      if (isChanging) {
-        setSelectedAction(null);
-        setConfigOpen(false);
-      }
-    } catch (e) {
-      console.error('[NovaAutomacao] handleTriggerClick', e);
+    const isChanging = selectedTrigger !== id;
+    setSelectedTrigger(prev => (prev === id ? null : id));
+    if (isChanging) {
+      setSelectedAction(null);
+      setConfigOpen(false);
     }
   };
 
   const handleConditionClick = (id: string) => {
-    try {
-      setCondSkipped(false);
-      setSelectedCond(prev => (prev === id ? null : id));
-      setCondValue('');
-    } catch (e) {
-      console.error('[NovaAutomacao] handleConditionClick', e);
-    }
+    setCondSkipped(false);
+    setSelectedCond(prev => (prev === id ? null : id));
+    setCondValue('');
   };
 
   const handleSkipCondition = () => {
-    try {
-      setSelectedCond(null);
-      setCondSkipped(true);
-    } catch (e) {
-      console.error('[NovaAutomacao] handleSkipCondition', e);
-    }
+    setSelectedCond(null);
+    setCondSkipped(true);
   };
 
   const handleActionClick = (id: string) => {
-    try {
-      if (selectedAction === id) {
-        setSelectedAction(null);
-        setConfigOpen(false);
-      } else {
-        setSelectedAction(id);
-        setConfigOpen(false);
-      }
-    } catch (e) {
-      console.error('[NovaAutomacao] handleActionClick', e);
+    if (selectedAction === id) {
+      setSelectedAction(null);
+      setConfigOpen(false);
+    } else {
+      setSelectedAction(id);
+      setConfigOpen(false);
     }
   };
 
@@ -584,8 +560,8 @@ export default function NovaAutomacaoPage() {
                                         className="na-config-textarea"
                                         placeholder={'Olá, {nome_cidadao}.\n\nSeu processo {nome_processo} foi atualizado.'}
                                         rows={4}
-                                        value={emailBody}
-                                        onChange={e => setEmailBody(e.target.value)}
+                                        value={messageBody}
+                                        onChange={e => setMessageBody(e.target.value)}
                                       />
                                       <div className="na-variables-hint">
                                         <span className="na-variables-label">Inserir variável:</span>
@@ -593,7 +569,7 @@ export default function NovaAutomacaoPage() {
                                           <button
                                             key={v}
                                             className="na-variable-chip"
-                                            onClick={() => setEmailBody(prev => prev + v)}
+                                            onClick={() => setMessageBody(prev => prev + v)}
                                           >
                                             {v}
                                           </button>
@@ -610,8 +586,8 @@ export default function NovaAutomacaoPage() {
                                       className="na-config-textarea"
                                       placeholder="Digite a mensagem a ser enviada..."
                                       rows={4}
-                                      value={emailBody}
-                                      onChange={e => setEmailBody(e.target.value)}
+                                      value={messageBody}
+                                      onChange={e => setMessageBody(e.target.value)}
                                     />
                                     <div className="na-variables-hint">
                                       <span className="na-variables-label">Inserir variável:</span>
@@ -619,7 +595,7 @@ export default function NovaAutomacaoPage() {
                                         <button
                                           key={v}
                                           className="na-variable-chip"
-                                          onClick={() => setEmailBody(prev => prev + v)}
+                                          onClick={() => setMessageBody(prev => prev + v)}
                                         >
                                           {v}
                                         </button>

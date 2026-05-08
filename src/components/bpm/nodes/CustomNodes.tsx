@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position, NodeToolbar, useReactFlow, MarkerType } from '@xyflow/react';
+import type { NodeProps, Node } from '@xyflow/react';
+import type { NodeData } from '../../../types/bpmTypes';
 
-// ── Gerador de IDs ───────────────────────────────────────────
-let _nodeCounter = 1000;
-const genId = () => `node_${_nodeCounter++}`;
+// ── Gerador de IDs por módulo ────────────────────────────────
+// Não é um estado de componente: é um contador de módulo estável.
+// Evitamos variável mutável "solta" no escopo global usando módulo ES.
+let _nodeCounterModule = 1000;
+const genId = () => `node_${_nodeCounterModule++}`;
 
 // ── Helper: handles nos 4 lados (source + target) ───────────
-// Handles primários (visíveis) = top-target / bottom-source
-// Handles laterais (só aparecem no hover) = os demais
 function NodeHandles() {
   return (
     <>
@@ -27,11 +29,11 @@ function NodeHandles() {
 
 // ── Tipos disponíveis no picker ──────────────────────────────
 const ADD_TYPES = [
-  { type: 'task',         label: 'Tarefa de Usuário',    icon: 'fa-regular fa-user',        color: '#0058db', bg: '#dce6f5' },
-  { type: 'gateway',      label: 'Gateway Exclusivo',    icon: 'fa-regular fa-code-branch',  color: '#9333ea', bg: '#f3e8ff' },
-  { type: 'end',          label: 'Evento de Fim',        icon: 'fa-regular fa-stop',         color: '#ef4444', bg: '#fee2e2' },
-  { type: 'intermediate', label: 'Evento Intermediário', icon: 'fa-regular fa-circle-dot',   color: '#f59e0b', bg: '#fef3c7' },
-  { type: 'task-email',   label: 'Tarefa de Envio',      icon: 'fa-regular fa-envelope',     color: '#ea580c', bg: '#ffedd5' },
+  { type: 'task',         label: 'Tarefa de Usuário',    icon: 'fa-regular fa-user',        color: 'var(--bpm-node-task)',        bg: 'var(--bpm-node-task-light)' },
+  { type: 'gateway',      label: 'Gateway Exclusivo',    icon: 'fa-regular fa-code-branch',  color: 'var(--bpm-node-gateway-xor)', bg: 'var(--bpm-node-gateway-xor-light)' },
+  { type: 'end',          label: 'Evento de Fim',        icon: 'fa-regular fa-stop',         color: 'var(--bpm-node-end)',         bg: 'var(--bpm-node-end-light)' },
+  { type: 'intermediate', label: 'Evento Intermediário', icon: 'fa-regular fa-circle-dot',   color: 'var(--bpm-node-intermediate)', bg: 'var(--bpm-node-intermediate-light)' },
+  { type: 'task-email',   label: 'Tarefa de Envio',      icon: 'fa-regular fa-envelope',     color: 'var(--bpm-node-task-email)', bg: 'var(--bpm-node-task-email-light)' },
 ];
 
 type Dir = 'top' | 'right' | 'bottom' | 'left';
@@ -43,7 +45,6 @@ const DIRS: Array<{ dir: Dir; pos: Position }> = [
   { dir: 'left',   pos: Position.Left   },
 ];
 
-// ── Handle source/target por direção ─────────────────────────
 const DIR_HANDLES: Record<Dir, { sourceHandle: string; targetHandle: string }> = {
   right:  { sourceHandle: 'source-right',  targetHandle: 'target-left'   },
   left:   { sourceHandle: 'source-left',   targetHandle: 'target-right'  },
@@ -84,6 +85,7 @@ function NodeActionToolbar({ nodeId, selected }: { nodeId: string; selected: boo
 
     const off = offsets[dir];
     const hdl = DIR_HANDLES[dir];
+    const edgeColor = 'var(--bpm-edge-color)';
 
     setNodes(nds => [...nds, {
       id: newId, type,
@@ -96,8 +98,8 @@ function NodeActionToolbar({ nodeId, selected }: { nodeId: string; selected: boo
       sourceHandle: hdl.sourceHandle,
       targetHandle: hdl.targetHandle,
       type: 'labeled', label: '', animated: false,
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
-      style: { stroke: '#0058db', strokeWidth: 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: edgeColor, width: 16, height: 16 },
+      style: { stroke: edgeColor, strokeWidth: 2 },
     }]);
     setOpenDir(null);
   };
@@ -154,12 +156,12 @@ function NodeWrapper({
 }
 
 // ── START ────────────────────────────────────────────────────
-export function StartNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function StartNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--start" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-event-circle" style={{ background: '#22c55e', boxShadow: '0 0 0 4px #dcfce7' }}>
-        <i className="fa-solid fa-play" style={{ fontSize: 10, color: '#fff', marginLeft: 2 }} />
+      <div className="bpm-node-event-circle" style={{ background: 'var(--bpm-node-start)', boxShadow: '0 0 0 4px var(--bpm-node-start-light)' }}>
+        <i className="fa-solid fa-play" style={{ fontSize: 10, color: 'var(--text-white)', marginLeft: 2 }} />
       </div>
       <div className="bpm-node-event-label">{data.label || 'Início'}</div>
     </NodeWrapper>
@@ -167,12 +169,12 @@ export function StartNode({ id, data, selected }: { id: string; data: any; selec
 }
 
 // ── END ──────────────────────────────────────────────────────
-export function EndNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function EndNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--end" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-event-circle" style={{ background: '#ef4444', boxShadow: '0 0 0 4px #fee2e2' }}>
-        <i className="fa-solid fa-stop" style={{ fontSize: 10, color: '#fff' }} />
+      <div className="bpm-node-event-circle" style={{ background: 'var(--bpm-node-end)', boxShadow: '0 0 0 4px var(--bpm-node-end-light)' }}>
+        <i className="fa-solid fa-stop" style={{ fontSize: 10, color: 'var(--text-white)' }} />
       </div>
       <div className="bpm-node-event-label">{data.label || 'Fim'}</div>
     </NodeWrapper>
@@ -180,12 +182,12 @@ export function EndNode({ id, data, selected }: { id: string; data: any; selecte
 }
 
 // ── INTERMEDIATE ─────────────────────────────────────────────
-export function IntermediateNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function IntermediateNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--intermediate" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-event-circle" style={{ background: '#f59e0b', boxShadow: '0 0 0 4px #fef3c7', border: '3px solid #fff' }}>
-        <i className="fa-regular fa-circle-dot" style={{ fontSize: 10, color: '#fff' }} />
+      <div className="bpm-node-event-circle" style={{ background: 'var(--bpm-node-intermediate)', boxShadow: '0 0 0 4px var(--bpm-node-intermediate-light)', border: '3px solid var(--bg-white)' }}>
+        <i className="fa-regular fa-circle-dot" style={{ fontSize: 10, color: 'var(--text-white)' }} />
       </div>
       <div className="bpm-node-event-label">{data.label || 'Intermediário'}</div>
     </NodeWrapper>
@@ -193,15 +195,15 @@ export function IntermediateNode({ id, data, selected }: { id: string; data: any
 }
 
 // ── TASK (Humana) ────────────────────────────────────────────
-export function TaskNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function TaskNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#0058db18', borderBottom: '1px solid #0058db22' }}>
-        <div className="bpm-node-icon" style={{ background: '#dce6f5', color: '#0058db' }}>
+      <div className="bpm-node-header bpm-node-header--task">
+        <div className="bpm-node-icon bpm-node-icon--task">
           <i className="fa-regular fa-user" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#0058db' }}>Tarefa de Usuário</span>
+        <span className="bpm-node-type-label bpm-node-type-label--task">Tarefa de Usuário</span>
         {data.ator && <span className="bpm-node-badge">{data.ator}</span>}
       </div>
       <div className="bpm-node-body">
@@ -223,15 +225,15 @@ export function TaskNode({ id, data, selected }: { id: string; data: any; select
 }
 
 // ── TASK SYSTEM ──────────────────────────────────────────────
-export function TaskSystemNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function TaskSystemNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#6366f118', borderBottom: '1px solid #6366f122' }}>
-        <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#6366f1' }}>
+      <div className="bpm-node-header bpm-node-header--system">
+        <div className="bpm-node-icon bpm-node-icon--system">
           <i className="fa-regular fa-gear" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#6366f1' }}>Sistema</span>
+        <span className="bpm-node-type-label bpm-node-type-label--system">Sistema</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Tarefa de Sistema'}</div>
@@ -242,15 +244,15 @@ export function TaskSystemNode({ id, data, selected }: { id: string; data: any; 
 }
 
 // ── TASK SERVICE ─────────────────────────────────────────────
-export function TaskServiceNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function TaskServiceNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#0891b218', borderBottom: '1px solid #0891b222' }}>
-        <div className="bpm-node-icon" style={{ background: '#cffafe', color: '#0891b2' }}>
+      <div className="bpm-node-header bpm-node-header--service">
+        <div className="bpm-node-icon bpm-node-icon--service">
           <i className="fa-regular fa-server" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#0891b2' }}>Tarefa de Serviço</span>
+        <span className="bpm-node-type-label bpm-node-type-label--service">Tarefa de Serviço</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Tarefa de Serviço'}</div>
@@ -261,15 +263,15 @@ export function TaskServiceNode({ id, data, selected }: { id: string; data: any;
 }
 
 // ── TASK SCRIPT ──────────────────────────────────────────────
-export function TaskScriptNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function TaskScriptNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#7c3aed18', borderBottom: '1px solid #7c3aed22' }}>
-        <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#7c3aed' }}>
+      <div className="bpm-node-header bpm-node-header--script">
+        <div className="bpm-node-icon bpm-node-icon--script">
           <i className="fa-regular fa-code" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#7c3aed' }}>Script</span>
+        <span className="bpm-node-type-label bpm-node-type-label--script">Script</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Script'}</div>
@@ -280,15 +282,15 @@ export function TaskScriptNode({ id, data, selected }: { id: string; data: any; 
 }
 
 // ── TASK EMAIL ───────────────────────────────────────────────
-export function TaskEmailNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function TaskEmailNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#ea580c18', borderBottom: '1px solid #ea580c22' }}>
-        <div className="bpm-node-icon" style={{ background: '#ffedd5', color: '#ea580c' }}>
+      <div className="bpm-node-header bpm-node-header--email">
+        <div className="bpm-node-icon bpm-node-icon--email">
           <i className="fa-regular fa-envelope" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#ea580c' }}>Tarefa de Envio</span>
+        <span className="bpm-node-type-label bpm-node-type-label--email">Tarefa de Envio</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Enviar E-mail'}</div>
@@ -299,10 +301,10 @@ export function TaskEmailNode({ id, data, selected }: { id: string; data: any; s
 }
 
 // ── GATEWAY (XOR/Paralelo) ───────────────────────────────────
-export function GatewayNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function GatewayNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   const isParallel = data.type === 'paralelo';
-  const color = isParallel ? '#0ea5e9' : '#9333ea';
-  const icon  = isParallel ? 'fa-regular fa-arrows-split-up-and-left' : 'fa-regular fa-code-branch';
+  const colorVar = isParallel ? 'var(--bpm-node-gateway-par)' : 'var(--bpm-node-gateway-xor)';
+  const icon = isParallel ? 'fa-regular fa-arrows-split-up-and-left' : 'fa-regular fa-code-branch';
   const label = isParallel ? 'Gateway Paralelo' : 'Gateway Exclusivo';
 
   return (
@@ -313,20 +315,20 @@ export function GatewayNode({ id, data, selected }: { id: string; data: any; sel
       <Handle type="source" position={Position.Right}  id="source-right"  className="bpm-handle" />
       <Handle type="target" position={Position.Left}   id="target-left"   className="bpm-handle bpm-handle--side" />
       <Handle type="target" position={Position.Right}  id="target-right"  className="bpm-handle bpm-handle--side" />
-      <div className="bpm-node-gateway-diamond" style={{ borderColor: color }}>
-        <div className="bpm-node-gateway-icon" style={{ color }}>
+      <div className="bpm-node-gateway-diamond" style={{ borderColor: colorVar }}>
+        <div className="bpm-node-gateway-icon" style={{ color: colorVar }}>
           <i className={icon} />
         </div>
       </div>
-      <div className="bpm-node-gateway-label" style={{ color }}>
+      <div className="bpm-node-gateway-label" style={{ color: colorVar }}>
         {data.label || label}
       </div>
     </NodeWrapper>
   );
 }
 
-// ── GATEWAY INCLUSIVO (OR) ────────────────────────────────────
-export function GatewayInclusivoNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+// ── GATEWAY INCLUSIVO (OR) ───────────────────────────────────
+export function GatewayInclusivoNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--gateway" selected={selected}>
       <Handle type="target" position={Position.Top}    id="target-top"    className="bpm-handle" />
@@ -335,12 +337,12 @@ export function GatewayInclusivoNode({ id, data, selected }: { id: string; data:
       <Handle type="source" position={Position.Right}  id="source-right"  className="bpm-handle" />
       <Handle type="target" position={Position.Left}   id="target-left"   className="bpm-handle bpm-handle--side" />
       <Handle type="target" position={Position.Right}  id="target-right"  className="bpm-handle bpm-handle--side" />
-      <div className="bpm-node-gateway-diamond" style={{ borderColor: '#10b981' }}>
-        <div className="bpm-node-gateway-icon" style={{ color: '#10b981' }}>
+      <div className="bpm-node-gateway-diamond" style={{ borderColor: 'var(--bpm-node-gateway-inc)' }}>
+        <div className="bpm-node-gateway-icon" style={{ color: 'var(--bpm-node-gateway-inc)' }}>
           <i className="fa-regular fa-circle-nodes" />
         </div>
       </div>
-      <div className="bpm-node-gateway-label" style={{ color: '#10b981' }}>
+      <div className="bpm-node-gateway-label" style={{ color: 'var(--bpm-node-gateway-inc)' }}>
         {data.label || 'Gateway Inclusivo'}
       </div>
     </NodeWrapper>
@@ -348,15 +350,15 @@ export function GatewayInclusivoNode({ id, data, selected }: { id: string; data:
 }
 
 // ── MENSAGEM ─────────────────────────────────────────────────
-export function MsgNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function MsgNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#2563eb18', borderBottom: '1px solid #2563eb22' }}>
-        <div className="bpm-node-icon" style={{ background: '#dbeafe', color: '#2563eb' }}>
+      <div className="bpm-node-header bpm-node-header--msg">
+        <div className="bpm-node-icon bpm-node-icon--msg">
           <i className="fa-regular fa-message" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#2563eb' }}>Mensagem</span>
+        <span className="bpm-node-type-label bpm-node-type-label--msg">Mensagem</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Enviar Mensagem'}</div>
@@ -366,15 +368,15 @@ export function MsgNode({ id, data, selected }: { id: string; data: any; selecte
 }
 
 // ── NOTIFICAÇÃO ──────────────────────────────────────────────
-export function NotificationNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function NotificationNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#d9770618', borderBottom: '1px solid #d9770622' }}>
-        <div className="bpm-node-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
+      <div className="bpm-node-header bpm-node-header--notification">
+        <div className="bpm-node-icon bpm-node-icon--notification">
           <i className="fa-regular fa-bell" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#d97706' }}>Notificação</span>
+        <span className="bpm-node-type-label bpm-node-type-label--notification">Notificação</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Notificar'}</div>
@@ -384,15 +386,15 @@ export function NotificationNode({ id, data, selected }: { id: string; data: any
 }
 
 // ── CHATBOT ──────────────────────────────────────────────────
-export function ChatbotNode({ id, data, selected }: { id: string; data: any; selected: boolean }) {
+export function ChatbotNode({ id, data, selected }: NodeProps<Node<NodeData>>) {
   return (
     <NodeWrapper id={id} className="bpm-node--task" selected={selected}>
       <NodeHandles />
-      <div className="bpm-node-header" style={{ background: '#7c3aed18', borderBottom: '1px solid #7c3aed22' }}>
-        <div className="bpm-node-icon" style={{ background: '#ede9fe', color: '#7c3aed' }}>
+      <div className="bpm-node-header bpm-node-header--chatbot">
+        <div className="bpm-node-icon bpm-node-icon--chatbot">
           <i className="fa-regular fa-robot" />
         </div>
-        <span className="bpm-node-type-label" style={{ color: '#7c3aed' }}>Chatbot</span>
+        <span className="bpm-node-type-label bpm-node-type-label--chatbot">Chatbot</span>
       </div>
       <div className="bpm-node-body">
         <div className="bpm-node-title">{data.label || 'Interação Chatbot'}</div>

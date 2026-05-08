@@ -1,37 +1,27 @@
 import { useState, lazy, Suspense } from 'react';
+import type { Node } from '@xyflow/react';
 import type { FormFieldData } from '../formBuilder/fieldTypes';
-
-// FontAwesome muta <i> para <svg> via MutationObserver. React 19 quebra ao tentar
-// remover elementos que não existem mais no DOM. dangerouslySetInnerHTML isola a
-// mutação do FontAwesome do reconciliador do React.
-function Ico({ icon, className, style }: { icon: string; className?: string; style?: React.CSSProperties }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: `<i class="${icon}"></i>` }}
-      className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0, ...style }}
-    />
-  );
-}
+import type { NodeData } from '../../../types/bpmTypes';
+import { Ico } from '../../ui/Ico';
 
 // Importação lazy para isolar erros de inicialização do FormBuilder
 const FormBuilderPage = lazy(() => import('../formBuilder/FormBuilderPage'));
 
 // ── Tipos de nó disponíveis ──────────────────────────────────
 const NODE_TYPES = [
-  { value: 'start',             label: 'Evento de Início',              icon: 'fa-regular fa-play',                      color: '#22c55e', bg: '#dcfce7' },
-  { value: 'intermediate',      label: 'Evento Intermediário',           icon: 'fa-regular fa-circle-dot',                color: '#f59e0b', bg: '#fef3c7' },
-  { value: 'end',               label: 'Evento de Fim',                 icon: 'fa-regular fa-stop',                      color: '#ef4444', bg: '#fee2e2' },
-  { value: 'task',              label: 'Tarefa de Usuário',             icon: 'fa-regular fa-user',                      color: '#0058db', bg: '#dce6f5' },
-  { value: 'task-email',        label: 'Tarefa de Envio',               icon: 'fa-regular fa-envelope',                  color: '#ea580c', bg: '#ffedd5' },
-  { value: 'task-receive',      label: 'Tarefa de Recebimento',         icon: 'fa-regular fa-envelope-open',             color: '#0891b2', bg: '#cffafe' },
-  { value: 'task-manual',       label: 'Tarefa Manual',                 icon: 'fa-regular fa-hand',                      color: '#7c3aed', bg: '#ede9fe' },
-  { value: 'task-service',      label: 'Tarefa de Serviço',             icon: 'fa-regular fa-server',                    color: '#0891b2', bg: '#cffafe' },
-  { value: 'task-script',       label: 'Tarefa de Execução de Script',  icon: 'fa-regular fa-code',                      color: '#7c3aed', bg: '#ede9fe' },
-  { value: 'task-system',       label: 'Subprocesso Reutilizável',      icon: 'fa-regular fa-arrows-rotate',             color: '#6366f1', bg: '#ede9fe' },
-  { value: 'gateway',           label: 'Decisão — uma saída (XOR)',     icon: 'fa-regular fa-code-branch',               color: '#9333ea', bg: '#f3e8ff' },
-  { value: 'gateway-paralelo',  label: 'Divisão paralela — todas (AND)',icon: 'fa-regular fa-arrows-split-up-and-left',  color: '#0ea5e9', bg: '#e0f2fe' },
-  { value: 'gateway-inclusivo', label: 'Divisão inclusiva — várias (OR)',icon: 'fa-regular fa-circle-nodes',             color: '#10b981', bg: '#d1fae5' },
+  { value: 'start',             label: 'Evento de Início',               icon: 'fa-regular fa-play',                     color: 'var(--bpm-node-start)',            bg: 'var(--bpm-node-start-light)' },
+  { value: 'intermediate',      label: 'Evento Intermediário',            icon: 'fa-regular fa-circle-dot',               color: 'var(--bpm-node-intermediate)',     bg: 'var(--bpm-node-intermediate-light)' },
+  { value: 'end',               label: 'Evento de Fim',                  icon: 'fa-regular fa-stop',                     color: 'var(--bpm-node-end)',              bg: 'var(--bpm-node-end-light)' },
+  { value: 'task',              label: 'Tarefa de Usuário',              icon: 'fa-regular fa-user',                     color: 'var(--bpm-node-task)',             bg: 'var(--bpm-node-task-light)' },
+  { value: 'task-email',        label: 'Tarefa de Envio',                icon: 'fa-regular fa-envelope',                 color: 'var(--bpm-node-task-email)',       bg: 'var(--bpm-node-task-email-light)' },
+  { value: 'task-receive',      label: 'Tarefa de Recebimento',          icon: 'fa-regular fa-envelope-open',            color: 'var(--bpm-node-task-service)',     bg: 'var(--bpm-node-task-service-light)' },
+  { value: 'task-manual',       label: 'Tarefa Manual',                  icon: 'fa-regular fa-hand',                     color: 'var(--bpm-node-task-script)',      bg: 'var(--bpm-node-task-script-light)' },
+  { value: 'task-service',      label: 'Tarefa de Serviço',              icon: 'fa-regular fa-server',                   color: 'var(--bpm-node-task-service)',     bg: 'var(--bpm-node-task-service-light)' },
+  { value: 'task-script',       label: 'Tarefa de Execução de Script',   icon: 'fa-regular fa-code',                     color: 'var(--bpm-node-task-script)',      bg: 'var(--bpm-node-task-script-light)' },
+  { value: 'task-system',       label: 'Subprocesso Reutilizável',       icon: 'fa-regular fa-arrows-rotate',            color: 'var(--bpm-node-task-system)',      bg: 'var(--bpm-node-task-system-light)' },
+  { value: 'gateway',           label: 'Decisão — uma saída (XOR)',      icon: 'fa-regular fa-code-branch',              color: 'var(--bpm-node-gateway-xor)',      bg: 'var(--bpm-node-gateway-xor-light)' },
+  { value: 'gateway-paralelo',  label: 'Divisão paralela — todas (AND)', icon: 'fa-regular fa-arrows-split-up-and-left', color: 'var(--bpm-node-gateway-par)',      bg: 'var(--bpm-node-gateway-par-light)' },
+  { value: 'gateway-inclusivo', label: 'Divisão inclusiva — várias (OR)',icon: 'fa-regular fa-circle-nodes',             color: 'var(--bpm-node-gateway-inc)',      bg: 'var(--bpm-node-gateway-inc-light)' },
 ];
 
 const ATORES = [
@@ -110,7 +100,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Adicionar documentos em elaboração',
     descricao: 'Cria novos documentos em modo rascunho vinculados ao processo.',
     icon: 'fa-regular fa-file-plus',
-    cor: '#0058db', categoria: 'Documentos',
+    cor: 'var(--bpm-node-task)', categoria: 'Documentos',
     entradas: [
       { key: 'cdProcesso',  label: 'Código do processo',    obrigatorio: true },
       { key: 'cdUsuario',   label: 'Usuário responsável',   obrigatorio: true },
@@ -125,7 +115,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Inserir na pasta digital',
     descricao: 'Salva documentos diretamente na pasta digital do processo.',
     icon: 'fa-regular fa-folder-plus',
-    cor: '#0891b2', categoria: 'Documentos',
+    cor: 'var(--bpm-node-task-service)', categoria: 'Documentos',
     entradas: [
       { key: 'answerId',              label: 'ID da resposta do formulário', obrigatorio: true },
       { key: 'cdProcesso',            label: 'Código do processo',           obrigatorio: true },
@@ -139,7 +129,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Inserir modelo como anexo',
     descricao: 'Gera um documento a partir de um modelo e o anexa ao processo.',
     icon: 'fa-regular fa-file-import',
-    cor: '#7c3aed', categoria: 'Documentos',
+    cor: 'var(--bpm-node-task-script)', categoria: 'Documentos',
     entradas: [
       { key: 'cdModelo',   label: 'Código do modelo',   obrigatorio: true },
       { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
@@ -153,7 +143,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Mesclar documentos em PDF',
     descricao: 'Une múltiplos documentos em um único arquivo PDF.',
     icon: 'fa-regular fa-files',
-    cor: '#ea580c', categoria: 'Documentos',
+    cor: 'var(--bpm-node-task-email)', categoria: 'Documentos',
     entradas: [
       { key: 'listaIds',  label: 'Lista de IDs dos documentos', obrigatorio: true },
       { key: 'nomeArquivo', label: 'Nome do arquivo final' },
@@ -167,7 +157,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Vincular interessado ao processo',
     descricao: 'Associa uma pessoa física ou jurídica como interessada no processo.',
     icon: 'fa-regular fa-user-plus',
-    cor: '#0f6b3e', categoria: 'Processo',
+    cor: 'var(--success)', categoria: 'Processo',
     entradas: [
       { key: 'cdProcesso',  label: 'Código do processo',    obrigatorio: true },
       { key: 'cdInteressado', label: 'Código do interessado', obrigatorio: true },
@@ -179,7 +169,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Enviar e-mail de notificação',
     descricao: 'Dispara uma mensagem de e-mail para os envolvidos no processo.',
     icon: 'fa-regular fa-envelope',
-    cor: '#d97706', categoria: 'Comunicação',
+    cor: 'var(--bpm-node-notification)', categoria: 'Comunicação',
     entradas: [
       { key: 'destinatario', label: 'Destinatário (e-mail)',  obrigatorio: true },
       { key: 'assunto',      label: 'Assunto', obrigatorio: true },
@@ -192,7 +182,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Assinar digitalmente',
     descricao: 'Solicita assinatura digital de um documento via certificado.',
     icon: 'fa-regular fa-signature',
-    cor: '#7c3aed', categoria: 'Assinatura',
+    cor: 'var(--bpm-node-chatbot)', categoria: 'Assinatura',
     entradas: [
       { key: 'idDocumento', label: 'ID do documento',  obrigatorio: true },
       { key: 'cdAssinante', label: 'Código do assinante' },
@@ -207,7 +197,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Consultar CPF na Receita Federal',
     descricao: 'Verifica a situação cadastral de um CPF junto à Receita Federal.',
     icon: 'fa-regular fa-id-card',
-    cor: '#0891b2', categoria: 'Integração',
+    cor: 'var(--bpm-node-task-service)', categoria: 'Integração',
     entradas: [
       { key: 'cpf', label: 'CPF a consultar', obrigatorio: true },
     ],
@@ -221,7 +211,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Enviar dados ao TCE-SC',
     descricao: 'Exporta informações do processo para o sistema do TCE-SC.',
     icon: 'fa-regular fa-cloud-arrow-up',
-    cor: '#6366f1', categoria: 'Integração',
+    cor: 'var(--bpm-node-task-system)', categoria: 'Integração',
     entradas: [
       { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
       { key: 'payload',    label: 'Dados a exportar' },
@@ -235,7 +225,7 @@ const EXECUTAVEIS_CATALOGO: ExecDef[] = [
     label: 'Gerar PDF do processo',
     descricao: 'Cria um PDF consolidado com as informações do processo.',
     icon: 'fa-regular fa-file-pdf',
-    cor: '#ef4444', categoria: 'Documentos',
+    cor: 'var(--bpm-node-end)', categoria: 'Documentos',
     entradas: [
       { key: 'cdProcesso', label: 'Código do processo', obrigatorio: true },
       { key: 'template',   label: 'Modelo de layout' },
@@ -280,9 +270,9 @@ function TabGeral({
   update,
   changeNodeType,
 }: {
-  node: any;
-  update: (patch: any) => void;
-  changeNodeType: (id: string, type: string, data: any) => void;
+  node: Node<NodeData>;
+  update: (patch: Partial<NodeData>) => void;
+  changeNodeType: (id: string, type: string, data: Partial<NodeData>) => void;
 }) {
   const data = node.data || {};
   const currentType = NODE_TYPES.find(t => t.value === node.type) ?? NODE_TYPES[3];
@@ -351,7 +341,7 @@ function TabGeral({
                 name={`prazoTipo-${node.id}`}
                 value={opt.value}
                 checked={prazoTipo === opt.value}
-                onChange={() => update({ prazoTipo: opt.value })}
+                onChange={() => update({ prazoTipo: opt.value as NodeData['prazoTipo'] })}
                 className="cfg-radio"
               />
               {opt.label}
@@ -372,7 +362,7 @@ function TabGeral({
               className="cfg-select"
               style={{ flex: 1 }}
               value={data.prazoUnidade ?? 'dias'}
-              onChange={e => update({ prazoUnidade: e.target.value })}
+              onChange={e => update({ prazoUnidade: e.target.value as NodeData['prazoUnidade'] })}
             >
               <option value="minutos">Minutos</option>
               <option value="horas">Horas</option>
@@ -405,7 +395,7 @@ function TabGeral({
                 name={`avisoTipo-${node.id}`}
                 value={opt.value}
                 checked={(data.avisoTipo ?? 'sem-aviso') === opt.value}
-                onChange={() => update({ avisoTipo: opt.value })}
+                onChange={() => update({ avisoTipo: opt.value as NodeData['avisoTipo'] })}
                 className="cfg-radio"
               />
               {opt.label}
@@ -426,7 +416,7 @@ function TabGeral({
               className="cfg-select"
               style={{ flex: 1 }}
               value={data.avisoUnidade ?? 'dias'}
-              onChange={e => update({ avisoUnidade: e.target.value })}
+              onChange={e => update({ avisoUnidade: e.target.value as NodeData['avisoUnidade'] })}
             >
               <option value="minutos">Minutos antes</option>
               <option value="horas">Horas antes</option>
@@ -450,7 +440,7 @@ function TabGeral({
 }
 
 // ── Aba: Ator ────────────────────────────────────────────────
-function TabAtor({ data, update }: { data: any; update: (patch: any) => void }) {
+function TabAtor({ data, update }: { data: NodeData; update: (patch: Partial<NodeData>) => void }) {
   const ator = data.ator || '';
   const notificarEmail = data.notificarEmail ?? false;
   const notificacaoPersonalizada = data.notificacaoPersonalizada ?? false;
@@ -684,10 +674,10 @@ function ExecCard({
   );
 }
 
-function TabExecutaveis({ data, update }: { data: any; update: (patch: any) => void }) {
+function TabExecutaveis({ data, update }: { data: NodeData; update: (patch: Partial<NodeData>) => void }) {
   const [busca, setBusca]           = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const vinculos: ExecVinculo[]     = data.execVinculos || [];
+  const vinculos: ExecVinculo[]     = (data.execVinculos ?? []) as ExecVinculo[];
 
   const jaAdicionados = new Set(vinculos.map(v => v.value));
   const filtrados = EXECUTAVEIS_CATALOGO.filter(
@@ -799,15 +789,15 @@ function TabFormulario({
   update,
   taskName,
 }: {
-  data: any;
-  update: (patch: any) => void;
+  data: NodeData;
+  update: (patch: Partial<NodeData>) => void;
   taskName: string;
 }) {
   const formTipo     = data.formTipo     ?? 'dinamico';
   const formNome     = data.formNome     ?? '';
-  const formFields: FormFieldData[] = data.formBuilderFields ?? [];
-  const formEntradas: FormVarMap[] = data.formEntradas ?? [];
-  const formSaidas:   FormVarMap[] = data.formSaidas   ?? [];
+  const formFields   = (data.formBuilderFields ?? []) as FormFieldData[];
+  const formEntradas: FormVarMap[] = (data.formEntradas ?? []) as FormVarMap[];
+  const formSaidas:   FormVarMap[] = (data.formSaidas   ?? []) as FormVarMap[];
   const [abaVar, setAbaVar]     = useState<'entradas' | 'saidas'>('entradas');
   const [builderOpen, setBuilderOpen] = useState(false);
 
@@ -839,7 +829,7 @@ function TabFormulario({
                   name="formTipo"
                   value={t.value}
                   checked={formTipo === t.value}
-                  onChange={() => update({ formTipo: t.value })}
+                  onChange={() => update({ formTipo: t.value as NodeData['formTipo'] })}
                   className="cfg-radio"
                 />
                 {t.label}
@@ -1017,7 +1007,7 @@ function TabFormulario({
 }
 
 // ── Aba: Propriedades ────────────────────────────────────────
-function TabPropriedades({ data, update }: { data: any; update: (patch: any) => void }) {
+function TabPropriedades({ data, update }: { data: NodeData; update: (patch: Partial<NodeData>) => void }) {
   const props: { chave: string; valor: string }[] = data.customProps || [];
 
   const addProp = () => {
@@ -1095,9 +1085,9 @@ export default function BpmProperties({
   updateNodeData,
   changeNodeType,
 }: {
-  selectedNode: any;
-  updateNodeData: (id: string, data: any) => void;
-  changeNodeType: (id: string, type: string, data: any) => void;
+  selectedNode: Node<NodeData> | null;
+  updateNodeData: (id: string, data: NodeData) => void;
+  changeNodeType: (id: string, type: string, data: Partial<NodeData>) => void;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>('geral');
 
@@ -1115,16 +1105,16 @@ export default function BpmProperties({
     );
   }
 
-  const data = selectedNode.data || {};
-  const isTask = ['task', 'task-email', 'task-receive', 'task-manual', 'task-service', 'task-script', 'task-system', 'msg', 'notification'].includes(selectedNode.type);
+  const data: NodeData = selectedNode.data ?? { label: '' };
+  const isTask = ['task', 'task-email', 'task-receive', 'task-manual', 'task-service', 'task-script', 'task-system', 'msg', 'notification'].includes(selectedNode.type ?? '');
 
-  const update = (patch: Record<string, any>) => {
+  const update = (patch: Partial<NodeData>) => {
     updateNodeData(selectedNode.id, { ...data, ...patch });
   };
 
   const currentTypeMeta = NODE_TYPES.find(t => t.value === selectedNode.type);
-  const iconColor = currentTypeMeta?.color ?? data.color ?? '#0058db';
-  const iconBg    = currentTypeMeta?.bg    ?? data.bg    ?? '#dce6f5';
+  const iconColor = currentTypeMeta?.color ?? data.color ?? 'var(--bpm-node-task)';
+  const iconBg    = currentTypeMeta?.bg    ?? data.bg    ?? 'var(--bpm-node-task-light)';
   const iconClass = currentTypeMeta?.icon  ?? data.icon  ?? 'fa-regular fa-square';
 
   return (

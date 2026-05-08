@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { processos, fluxos, versoes, regras } from '../data/mockData'
 import FlowCanvas from '../components/bpm/FlowCanvas'
@@ -18,8 +18,22 @@ export default function ProcessoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [tab, setTab] = useState('visao-geral')
+  const [restoreTarget, setRestoreTarget] = useState<string | null>(null)
 
-  const processo = processos.find(p => p.id === id) || processos[0]
+  const processo = processos.find(p => p.id === id)
+
+  if (!processo) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: 40 }}>
+        <i className="fa-regular fa-file-circle-question" style={{ fontSize: 40, color: 'var(--text-tertiary)' }} />
+        <div style={{ fontWeight: 700, fontSize: 16 }}>Processo não encontrado</div>
+        <button className="btn btn-primary" onClick={() => navigate('/processos')}>
+          Voltar à lista
+        </button>
+      </div>
+    )
+  }
+
   const fluxo = fluxos.find(f => f.processoId === processo.id)
   const versoesProcesso = versoes[processo.id] || []
   const regrasProcesso = regras[processo.id] || []
@@ -97,7 +111,7 @@ export default function ProcessoDetailPage() {
                 </div>
                 <div className="vg-kpi-label">SLA a vencer</div>
                 <div className="vg-kpi-value">40<span className="vg-kpi-unit"> dias</span></div>
-                <div className="vg-kpi-sub">Vence em 04/08/2024</div>
+                <div className="vg-kpi-sub">Vence em 04/08/2026</div>
               </div>
               <div className="vg-kpi-card vg-kpi-card--info">
                 <div className="vg-kpi-icon-wrap" style={{ background: 'var(--bpm-sky-light)', color: 'var(--bpm-sky)' }}>
@@ -133,7 +147,7 @@ export default function ProcessoDetailPage() {
                     </div>
                     <div className="vg-info-item">
                       <span className="vg-info-label">Aguardar pagamento</span>
-                      <span className="vg-info-value">Etapa com menor tempo: 30 dias</span>
+                      <span className="vg-info-value">Etapa com maior tempo: 30 dias</span>
                     </div>
                     <div className="vg-info-item">
                       <span className="vg-info-label">📅 Última atualização</span>
@@ -154,7 +168,7 @@ export default function ProcessoDetailPage() {
                 <div className="card card-body">
                   <h3 className="vg-section-title">Aplicações e Integrações</h3>
                   <div className="vg-integrações">
-                    {['Ciudadão', 'Pagamento', 'Assinaltura', 'Notificações', 'e-mail', 'Estação'].map(app => (
+                    {['Cidadão', 'Pagamento', 'Assinatura', 'Notificações', 'E-mail', 'Estação'].map(app => (
                       <div key={app} className="integracao-item">
                         <div className="integracao-icon">🔗</div>
                         <span>{app}</span>
@@ -176,7 +190,7 @@ export default function ProcessoDetailPage() {
                   <div className="vg-documentos">
                     {[
                       { nome: 'Lei Complementar nº 140/2011', tipo: 'Lei' },
-                      { nome: 'Resolução COAMRA nº 237/1997', tipo: 'Resolução' },
+                      { nome: 'Resolução CONAMA nº 237/1997', tipo: 'Resolução' },
                     ].map(doc => (
                       <div key={doc.nome} className="vg-doc-item">
                         <div className="vg-doc-icon">
@@ -265,7 +279,7 @@ export default function ProcessoDetailPage() {
               <div className="formulario-campos-col">
                 <div className="formulario-campos-header">
                   <div>
-                    <h3 className="col-title">Campos do etapa: Analisar solicitação</h3>
+                    <h3 className="col-title">Campos da etapa: Analisar solicitação</h3>
                     <p style={{fontSize:'var(--font-size-xs)', color:'var(--text-tertiary)'}}>
                       Configure os campos que serão exibidos nesta etapa do processo
                     </p>
@@ -294,7 +308,7 @@ export default function ProcessoDetailPage() {
                       { nome: 'Documentos anexos', tipo: 'Arquivo', obrig: 'Sim' },
                       { nome: 'Solicitação de revisão', tipo: 'Assinatura', obrig: 'Sim' },
                     ].map((campo, i) => (
-                      <tr key={i}>
+                      <tr key={campo.nome}>
                         <td style={{color:'var(--text-tertiary)'}}>{i + 1}</td>
                         <td style={{fontWeight:500}}>{campo.nome}</td>
                         <td><span className="badge badge-neutral">{campo.tipo}</span></td>
@@ -358,12 +372,25 @@ export default function ProcessoDetailPage() {
               <div className="regras-col">
                 <div className="regras-col-header">
                   <h3 className="col-title">Automações</h3>
-                  <button className="btn btn-secondary btn-sm">+ Nova automação</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => navigate('/processos/automacoes/nova')}>+ Nova automação</button>
                 </div>
-                <div className="automacao-empty">
-                  <div className="automacao-empty-icon">⚡</div>
-                  <p>Nenhuma automação configurada</p>
-                  <button className="btn btn-primary btn-sm">Criar automação</button>
+                <div className="regras-list">
+                  {regrasProcesso.length > 0 ? regrasProcesso.map(regra => (
+                    <div key={`auto-${regra.id}`} className={`regra-item card card-body ${!regra.ativa ? 'inativa' : ''}`}>
+                      <div className="regra-header">
+                        <div className={`toggle-switch ${regra.ativa ? 'active' : ''}`} style={{transform:'scale(0.85)'}} />
+                        <span className="badge badge-primary">{regra.ativa ? 'Ativa' : 'Inativa'}</span>
+                      </div>
+                      <p className="regra-desc">{regra.descricao}</p>
+                      <p className="regra-acao-desc"><strong>Ação:</strong> {regra.acao}</p>
+                    </div>
+                  )) : (
+                    <div className="automacao-empty">
+                      <div className="automacao-empty-icon">⚡</div>
+                      <p>Nenhuma automação vinculada a este processo</p>
+                      <button className="btn btn-primary btn-sm" onClick={() => navigate('/processos/automacoes/nova')}>Criar automação</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -423,7 +450,7 @@ export default function ProcessoDetailPage() {
                     { nome:'3.1 Solicitar correção', prazo:'3 dias úteis', medio:'1 dia', sla:'99%', alerta:'1 dia antes' },
                     { nome:'4. Emitir licença', prazo:'5 dias úteis', medio:'5 dias', sla:'88%', alerta:'1 dia antes' },
                   ].map((linha, i) => (
-                    <tr key={i}>
+                    <tr key={linha.nome}>
                       <td style={{fontWeight:500}}>{linha.nome}</td>
                       <td>{linha.prazo}</td>
                       <td>{linha.medio}</td>
@@ -481,7 +508,12 @@ export default function ProcessoDetailPage() {
                     </div>
                     <p className="versao-desc">{v.descricao}</p>
                     {!v.ativa && (
-                      <button className="btn btn-ghost btn-sm">Restaurar esta versão</button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setRestoreTarget(v.numero)}
+                      >
+                        Restaurar esta versão
+                      </button>
                     )}
                   </div>
                 </div>
@@ -495,8 +527,8 @@ export default function ProcessoDetailPage() {
                   { tipo:'add', desc: 'Adicionado passo "Solicitar correção" logo após "Analisar solicitação"' },
                   { tipo:'edit', desc: 'SLA da etapa "Aguardar pagamento" alterado de 15 dias para 10 dias' },
                   { tipo:'edit', desc: 'Responsável da etapa "Emitir licença" alterado para "Diretor de Meio Ambiente"' },
-                ].map((alt, i) => (
-                  <div key={i} className="alteracao-item">
+                ].map((alt) => (
+                  <div key={alt.desc} className="alteracao-item">
                     <span className={`alteracao-tip ${alt.tipo}`}>{alt.tipo === 'add' ? '+' : '~'}</span>
                     <span>{alt.desc}</span>
                   </div>
@@ -569,12 +601,10 @@ export default function ProcessoDetailPage() {
               <h3 className="perf-section-title">Evolução do tempo total (dias)</h3>
               <div className="card card-body">
                 <div className="perf-chart">
-                  {[58, 54, 52, 49, 53, 47].map((v, i) => (
-                    <div key={i} className="perf-chart-col">
+                  {([['Out',58],['Nov',54],['Dez',52],['Jan',49],['Fev',53],['Mar',47]] as [string,number][]).map(([mes, v]) => (
+                    <div key={mes} className="perf-chart-col">
                       <div className="perf-chart-bar" style={{height: `${(v/60)*100}%`}} />
-                      <div className="perf-chart-label">
-                        {['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'][i]}
-                      </div>
+                      <div className="perf-chart-label">{mes}</div>
                     </div>
                   ))}
                 </div>
@@ -588,7 +618,7 @@ export default function ProcessoDetailPage() {
                 Redução no tempo total nos últimos <strong>2 trimestres</strong>
                 <br />
                 <span style={{color:'var(--text-tertiary)', fontSize:'var(--font-size-xs)'}}>
-                  Média de centro de etapa: 12 dias
+                  Média por etapa: 12 dias
                 </span>
               </div>
             </div>
@@ -596,6 +626,23 @@ export default function ProcessoDetailPage() {
         )}
 
       </div>
+
+      {/* Inline restore confirmation */}
+      {restoreTarget && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setRestoreTarget(null)}>
+          <div style={{ background: 'var(--bg-white)', borderRadius: 'var(--radius-lg)', padding: 32, maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: 'var(--shadow-lg)' }} onClick={e => e.stopPropagation()}>
+            <i className="fa-regular fa-clock-rotate-left" style={{ fontSize: 36, color: 'var(--warning)' }} />
+            <p style={{ textAlign: 'center', fontSize: 'var(--font-size-base)', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+              Restaurar a versão <strong>{restoreTarget}</strong>? A versão atual será substituída por esta configuração.
+            </p>
+            <div style={{ display: 'flex', gap: 12, width: '100%' }}>
+              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setRestoreTarget(null)}>Cancelar</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setRestoreTarget(null); }}>Restaurar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

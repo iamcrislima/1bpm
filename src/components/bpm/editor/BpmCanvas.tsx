@@ -5,6 +5,7 @@ import {
   useEdgesState,
   addEdge,
   useReactFlow,
+  useViewport,
   Background,
   BackgroundVariant,
   MarkerType,
@@ -13,6 +14,7 @@ import {
   getSmoothStepPath,
 } from '@xyflow/react';
 import type { Connection, Edge, Node, EdgeProps } from '@xyflow/react';
+import type { NodeData } from '../../../types/bpmTypes';
 
 import {
   StartNode, EndNode, TaskNode, GatewayNode,
@@ -47,8 +49,9 @@ function LabeledEdge({
   }, [id, text, setEdges]);
 
   const hasText = text.trim().length > 0;
-  const isSimulating = Boolean((data as any)?.simulating);
-  const simKey = (data as any)?.simKey ?? 0;
+  const edgeData = data as Record<string, unknown> | undefined;
+  const isSimulating = Boolean(edgeData?.simulating);
+  const simKey = (edgeData?.simKey as number) ?? 0;
 
   return (
     <>
@@ -141,20 +144,17 @@ const edgeTypes = {
   labeled: LabeledEdge,
 };
 
-let idCounter = 100;
-const getId = () => `node_${idCounter++}`;
-
 interface NodePatch {
   id: string;
-  data: Record<string, any>;
+  data: NodeData;
   ts: number;
 }
 
 interface BpmCanvasProps {
-  onNodeSelect: (node: Node | null) => void;
-  onNodesUpdate?: (nodes: Node[]) => void;
+  onNodeSelect: (node: Node<NodeData> | null) => void;
+  onNodesUpdate?: (nodes: Node<NodeData>[]) => void;
   onEdgesUpdate?: (edges: Edge[]) => void;
-  initialNodes?: Node[];
+  initialNodes?: Node<NodeData>[];
   initialEdges?: Edge[];
   nodeUpdate?: NodePatch | null;
   simAtivos?: Set<string>;
@@ -176,14 +176,18 @@ export default function BpmCanvas({
   simTokenKey = 0,
 }: BpmCanvasProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const idCounterRef = useRef(100);
+  const getId = useCallback(() => `node_${idCounterRef.current++}`, []);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { screenToFlowPosition, zoomIn, zoomOut, fitView } = useReactFlow();
-  const [zoom, setZoom] = useState(100);
+  const { zoom: viewportZoom } = useViewport();
   const [mode, setMode] = useState<'simples' | 'avancado'>('simples');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Aplica patches de dados vindos do painel de propriedades em tempo real
+  // useLayoutEffect aqui é intencional: evita flicker quando o painel de propriedades atualiza
   useLayoutEffect(() => {
     if (!nodeUpdate) return;
     setNodes(nds =>
@@ -192,7 +196,7 @@ export default function BpmCanvas({
   }, [nodeUpdate, setNodes]);
 
   // Aplica classNames de simulação nos nós
-  useLayoutEffect(() => {
+  useEffect(() => {
     setNodes(nds => nds.map(n => ({
       ...n,
       className: simAtivos?.has(n.id)
@@ -204,11 +208,11 @@ export default function BpmCanvas({
   }, [simAtivos, simConcluidos, setNodes]);
 
   // Marca arestas com token de simulação (aciona a bolinha animada)
-  useLayoutEffect(() => {
+  useEffect(() => {
     setEdges(eds => eds.map(e => ({
       ...e,
       data: {
-        ...((e.data as any) ?? {}),
+        ...(e.data ?? {}),
         simulating: simTokenEdges?.has(e.id) ?? false,
         simKey: simTokenKey,
       },
@@ -216,9 +220,13 @@ export default function BpmCanvas({
   }, [simTokenEdges, simTokenKey, setEdges]);
 
   // Notifica o pai quando as arestas mudam (para lógica de simulação)
-  useLayoutEffect(() => {
+  useEffect(() => {
     onEdgesUpdate?.(edges);
   }, [edges, onEdgesUpdate]);
+
+  useEffect(() => {
+    onNodesUpdate?.(nodes);
+  }, [nodes, onNodesUpdate]);
 
   // Helper para criar aresta com o tipo correto
   const makeEdge = useCallback((params: Connection | Edge, extra?: Partial<Edge>): Edge => ({
@@ -227,8 +235,8 @@ export default function BpmCanvas({
     animated: false,
     type: 'labeled',
     label: '',
-    markerEnd: { type: MarkerType.ArrowClosed, color: '#0058db', width: 16, height: 16 },
-    style: { stroke: '#0058db', strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--bpm-edge-color)', width: 16, height: 16 },
+    style: { stroke: 'var(--bpm-edge-color)', strokeWidth: 2 },
     ...extra,
   } as Edge), []);
 
@@ -254,19 +262,50 @@ export default function BpmCanvas({
 
     const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
 
-    const newNode: Node = {
+    const newNode: Node<NodeData> = {
       id: getId(),
       type,
       position,
       data: { label, icon, color, bg, responsavel: '', prazo: 3 },
     };
 
-    setNodes(nds => {
-      const updated = [...nds, newNode];
-      onNodesUpdate?.(updated);
-      return updated;
+    setNodes(nds => [...nds, newNode]);
+  }, [screenToFlowPosition, setNodes, getId]);
+
+  const addPaletteNode = useCallback((item: { type: string; label: string; icon: string; color: string; bg: string }) => {
+    const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+    const position = screenToFlowPosition({
+      x: (bounds?.left ?? 0) + (bounds?.width ?? 700) / 2,
+      y: (bounds?.top ?? 0) + (bounds?.height ?? 500) / 2,
     });
-  }, [screenToFlowPosition, setNodes, onNodesUpdate]);
+
+    const newNode: Node<NodeData> = {
+      id: getId(),
+      type: item.type,
+      position,
+      data: {
+        label: item.label,
+        icon: item.icon,
+        color: item.color,
+        bg: item.bg,
+        responsavel: '',
+        prazo: 3,
+      },
+    };
+
+    setNodes(nds => [...nds, newNode]);
+    onNodeSelect(newNode);
+    setSelectedNodeId(newNode.id);
+  }, [screenToFlowPosition, setNodes, onNodeSelect, getId]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const item = (event as CustomEvent).detail;
+      if (item?.type) addPaletteNode(item);
+    };
+    window.addEventListener('bpm:add-node', handler);
+    return () => window.removeEventListener('bpm:add-node', handler);
+  }, [addPaletteNode]);
 
   // Delete key — remove selected node + connected edges
   useEffect(() => {
@@ -283,7 +322,7 @@ export default function BpmCanvas({
     return () => document.removeEventListener('keydown', handler);
   }, [selectedNodeId, setNodes, setEdges, onNodeSelect]);
 
-  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+  const onNodeClick = (_: React.MouseEvent, node: Node<NodeData>) => {
     onNodeSelect(node);
     setSelectedNodeId(node.id);
   };
@@ -293,9 +332,10 @@ export default function BpmCanvas({
     setSelectedNodeId(null);
   };
 
-  const handleZoomIn = () => { zoomIn(); setZoom(z => Math.min(z + 10, 200)); };
-  const handleZoomOut = () => { zoomOut(); setZoom(z => Math.max(z - 10, 30)); };
-  const handleFitView = () => { fitView({ padding: 0.2 }); setZoom(100); };
+  const zoomPercent = Math.round(viewportZoom * 100);
+  const handleZoomIn = () => { zoomIn(); };
+  const handleZoomOut = () => { zoomOut(); };
+  const handleFitView = () => { fitView({ padding: 0.2 }); };
 
   return (
     <div
@@ -322,7 +362,7 @@ export default function BpmCanvas({
           <button className="canvas-tool-btn" onClick={handleZoomOut} title="Reduzir zoom">
             <i className="fa-regular fa-minus" />
           </button>
-          <span className="canvas-tool-zoom">{zoom}%</span>
+          <span className="canvas-tool-zoom">{zoomPercent}%</span>
           <button className="canvas-tool-btn" onClick={handleZoomIn} title="Aumentar zoom">
             <i className="fa-regular fa-plus" />
           </button>

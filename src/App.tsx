@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+﻿import { BrowserRouter, Routes, Route, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import Header from './components/layout/Header'
 import Subheader from './components/layout/Subheader'
 import Softbar from './components/layout/Softbar'
@@ -59,10 +59,18 @@ function AppLayout() {
       return [root, procInteligentes, { label: 'Processos' }]
     }
     if (location.pathname === '/processos/novo') {
-      return [root, procInteligentes, { label: 'Processos', to: '/processos/fluxos' }, { label: 'Novo Processo' }]
+      const template = searchParams.get('template')
+      const processo = template ? processos.find(p => p.templateKey === template) : null
+      return [
+        root,
+        procInteligentes,
+        { label: 'Processos', to: '/processos/fluxos' },
+        { label: processo ? `Editar fluxo: ${processo.nome}` : 'Novo Processo' },
+      ]
     }
     if (location.pathname.startsWith('/processos/automacoes')) {
-      return [root, procInteligentes, { label: 'Automações', to: '/processos?tab=automacoes' }, { label: 'Nova Automação' }]
+      const isNova = location.pathname.endsWith('/nova')
+      return [root, procInteligentes, { label: 'Automações', to: '/processos?tab=automacoes' }, { label: isNova ? 'Nova Automação' : 'Editar Automação' }]
     }
     const matchDetalhe = location.pathname.match(/^\/processos\/([^/]+)$/)
     if (matchDetalhe) {
@@ -89,7 +97,7 @@ function AppLayout() {
     <div className="app-root">
       {/* Softbar — sempre em modo produto (navegação entre produtos 1Doc) */}
       <Softbar
-        activeProductId={isBpmRoute ? 'processos-digitais' : 'processos-digitais'}
+        activeProductId="processos-digitais"
         clientProducts={MOCK_CONTRACTED}
         onProductChange={(id) => {
           if (id === 'processos-digitais') navigate('/')
@@ -114,6 +122,7 @@ function AppLayout() {
             <Route path="/processos/fluxos" element={<ProcessosPage />} />
             <Route path="/processos/novo" element={<BpmEditor />} />
             <Route path="/processos/automacoes/nova" element={<AutomacaoErrorBoundary><NovaAutomacaoPage /></AutomacaoErrorBoundary>} />
+            <Route path="/processos/automacoes/:id" element={<AutomacaoErrorBoundary><NovaAutomacaoPage /></AutomacaoErrorBoundary>} />
             <Route path="/processos/:id" element={<ProcessoDetailPage />} />
             <Route path="/formularios" element={<FormulariosPage />} />
             <Route path="/atividades" element={<PlaceholderPage title="Atividades" />} />
@@ -137,3 +146,4 @@ export default function App() {
     </BrowserRouter>
   )
 }
+
